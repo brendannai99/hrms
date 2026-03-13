@@ -17,7 +17,11 @@ function LoginPage() {
 
             localStorage.setItem("token", res.data.token);
 
-            navigate("/dashboard");
+            if (res.data.user.must_change_password) {
+                navigate("/first-time-password");
+            } else {
+                navigate("/dashboard");
+            }
         } catch (err) {
             setError(err.response?.data?.error || "Login failed");
         }
@@ -50,6 +54,7 @@ function LoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+
                     <div className="button-row-center">
                         <button
                             className="btn btn-secondary"
@@ -59,6 +64,7 @@ function LoginPage() {
                             Forgot Password
                         </button>
                     </div>
+
                     <div className="button-row-center">
                         <button className="btn btn-primary" type="submit">
                             Login

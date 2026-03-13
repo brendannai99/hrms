@@ -15,10 +15,12 @@ router.post("/login", (req, res) => {
         return res.status(400).json({ error: "Email and password are required" });
     }
 
-    db.get("SELECT * FROM employees WHERE email = ?", [email], async (err, user) => {
+    db.query("SELECT * FROM employees WHERE email = ?", [email], async (err, results) => {
         if (err) {
             return res.status(500).json({ error: "Login failed" });
         }
+
+        const user = results[0];
 
         if (!user) {
             return res.status(401).json({ error: "Invalid email or password" });
@@ -49,7 +51,8 @@ router.post("/login", (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    department: user.department
+                    department: user.department,
+                    must_change_password: !!user.must_change_password
                 }
             });
         } catch (error) {
@@ -59,24 +62,27 @@ router.post("/login", (req, res) => {
 });
 
 router.get("/me", authMiddleware, (req, res) => {
-    db.get(
-        "SELECT id, name, email, role, department, manager_id, created_at FROM employees WHERE id = ?",
+    db.query(
+        "SELECT id, name, email, role, department, manager_id, created_at, must_change_password FROM employees WHERE id = ?",
         [req.user.id],
-        (err, user) => {
+        (err, results) => {
             if (err) {
                 return res.status(500).json({ error: "Failed to fetch user" });
             }
+
+            const user = results[0];
 
             if (!user) {
                 return res.status(404).json({ error: "User not found" });
             }
 
+            user.must_change_password = !!user.must_change_password;
             res.json(user);
         }
     );
 });
 
-router.put("/change-password", authMiddleware, async (req, res) => {
+router.put("/change-password", authMiddleware, (req, res) => {
     const { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword) {
@@ -87,10 +93,12 @@ router.put("/change-password", authMiddleware, async (req, res) => {
         return res.status(400).json({ error: "New password must be at least 6 characters long" });
     }
 
-    db.get("SELECT * FROM employees WHERE id = ?", [req.user.id], async (err, user) => {
+    db.query("SELECT * FROM employees WHERE id = ?", [req.user.id], async (err, results) => {
         if (err) {
             return res.status(500).json({ error: "Failed to fetch user" });
         }
+
+        const user = results[0];
 
         if (!user) {
             return res.status(404).json({ error: "User not found" });
@@ -105,12 +113,16 @@ router.put("/change-password", authMiddleware, async (req, res) => {
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-            db.run(
-                "UPDATE employees SET password = ? WHERE id = ?",
+            db.query(
+                "UPDATE employees SET password = ?, must_change_password = 0 WHERE id = ?",
                 [hashedPassword, req.user.id],
-                function (updateErr) {
+                (updateErr, updateResult) => {
                     if (updateErr) {
                         return res.status(500).json({ error: "Failed to update password" });
+                    }
+
+                    if (updateResult.affectedRows === 0) {
+                        return res.status(404).json({ error: "User not found" });
                     }
 
                     res.json({ message: "Password changed successfully" });
@@ -122,6 +134,60 @@ router.put("/change-password", authMiddleware, async (req, res) => {
     });
 });
 
+router.put("/first-time-password", authMiddleware, (req, res) => {
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ error: "New password is required" });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters long" });
+    }
+
+    db.query(
+        "SELECT id, must_change_password FROM employees WHERE id = ?",
+        [req.user.id],
+        async (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: "Failed to fetch user" });
+            }
+
+            const user = results[0];
+
+            if (!user) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            if (!user.must_change_password) {
+                return res.status(400).json({ error: "First-time password change is not required" });
+            }
+
+            try {
+                const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+                db.query(
+                    "UPDATE employees SET password = ?, must_change_password = 0 WHERE id = ?",
+                    [hashedPassword, req.user.id],
+                    (updateErr, updateResult) => {
+                        if (updateErr) {
+                            return res.status(500).json({ error: "Failed to update password" });
+                        }
+
+                        if (updateResult.affectedRows === 0) {
+                            return res.status(404).json({ error: "User not found" });
+                        }
+
+                        res.json({ message: "Password set successfully" });
+                    }
+                );
+            } catch (error) {
+                res.status(500).json({ error: "Server error" });
+            }
+        }
+    );
+});
+
 router.put("/profile", authMiddleware, (req, res) => {
     const { name } = req.body;
 
@@ -129,15 +195,15 @@ router.put("/profile", authMiddleware, (req, res) => {
         return res.status(400).json({ error: "Name is required" });
     }
 
-    db.run(
+    db.query(
         "UPDATE employees SET name = ? WHERE id = ?",
         [name.trim(), req.user.id],
-        function (err) {
+        (err, result) => {
             if (err) {
                 return res.status(500).json({ error: "Failed to update profile" });
             }
 
-            if (this.changes === 0) {
+            if (result.affectedRows === 0) {
                 return res.status(404).json({ error: "User not found" });
             }
 
@@ -153,25 +219,32 @@ router.post("/request-password-reset", (req, res) => {
         return res.status(400).json({ error: "Email is required" });
     }
 
-    db.get("SELECT * FROM employees WHERE email = ?", [email], async (err, user) => {
+    db.query("SELECT * FROM employees WHERE email = ?", [email], (err, results) => {
         if (err) {
             return res.status(500).json({ error: "Failed to process request" });
         }
+
+        const user = results[0];
 
         if (!user) {
             return res.status(404).json({ error: "Email not found" });
         }
 
         const resetToken = crypto.randomBytes(32).toString("hex");
-        const expiry = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+        const expiry = new Date(Date.now() + 15 * 60 * 1000);
+
         const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-        db.run(
+        db.query(
             "UPDATE employees SET reset_token = ?, reset_token_expiry = ? WHERE id = ?",
             [resetToken, expiry, user.id],
-            async function (updateErr) {
+            async (updateErr, updateResult) => {
                 if (updateErr) {
                     return res.status(500).json({ error: "Failed to save reset token" });
+                }
+
+                if (updateResult.affectedRows === 0) {
+                    return res.status(404).json({ error: "User not found" });
                 }
 
                 try {
@@ -186,7 +259,7 @@ router.post("/request-password-reset", (req, res) => {
     });
 });
 
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", (req, res) => {
     const { token, newPassword } = req.body;
 
     if (!token || !newPassword) {
@@ -197,13 +270,15 @@ router.post("/reset-password", async (req, res) => {
         return res.status(400).json({ error: "New password must be at least 6 characters long" });
     }
 
-    db.get(
+    db.query(
         "SELECT * FROM employees WHERE reset_token = ?",
         [token],
-        async (err, user) => {
+        async (err, results) => {
             if (err) {
                 return res.status(500).json({ error: "Failed to reset password" });
             }
+
+            const user = results[0];
 
             if (!user) {
                 return res.status(400).json({ error: "Invalid reset token" });
@@ -219,16 +294,16 @@ router.post("/reset-password", async (req, res) => {
             try {
                 const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-                db.run(
-                    `
-            UPDATE employees
-            SET password = ?, reset_token = NULL, reset_token_expiry = NULL
-            WHERE id = ?
-          `,
+                db.query(
+                    "UPDATE employees SET password = ?, reset_token = NULL, reset_token_expiry = NULL, must_change_password = 0 WHERE id = ?",
                     [hashedPassword, user.id],
-                    function (updateErr) {
+                    (updateErr, updateResult) => {
                         if (updateErr) {
                             return res.status(500).json({ error: "Failed to update password" });
+                        }
+
+                        if (updateResult.affectedRows === 0) {
+                            return res.status(404).json({ error: "User not found" });
                         }
 
                         res.json({ message: "Password reset successfully" });

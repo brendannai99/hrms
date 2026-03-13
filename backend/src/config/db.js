@@ -1,14 +1,13 @@
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
+const mysql = require("mysql2");
 
-const dbPath = path.join(__dirname, "../../hrms.db");
-
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error("Database connection failed:", err.message);
-  } else {
-    console.log("Connected to SQLite database");
-  }
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 module.exports = db;

@@ -11,6 +11,12 @@ function DashboardPage() {
         const fetchUser = async () => {
             try {
                 const res = await api.get("/auth/me");
+
+                if (res.data.must_change_password) {
+                    navigate("/first-time-password");
+                    return;
+                }
+                
                 setUser(res.data);
             } catch {
                 setError("Failed to load user");
@@ -48,19 +54,33 @@ function DashboardPage() {
                 </div>
 
                 <div className="dashboard-actions">
-                    <button className="btn btn-primary" onClick={() => navigate("/profile")}>My Profile</button>
-                    <button className="btn btn-primary" onClick={() => navigate("/change-password")}>Change Password</button>
-                    <button className="btn btn-primary" onClick={() => navigate("/my-salary")}>My Salary</button>
+                    <button className="btn btn-primary" onClick={() => navigate("/profile")}>
+                        My Profile
+                    </button>
+                    <button className="btn btn-primary" onClick={() => navigate("/change-password")}>
+                        Change Password
+                    </button>
+                    <button className="btn btn-primary" onClick={() => navigate("/my-salary")}>
+                        My Salary
+                    </button>
 
                     {user.role === "admin" && (
                         <>
-                            <button className="btn btn-primary" onClick={() => navigate("/create-employee")}>Create Employee</button>
-                            <button className="btn btn-primary" onClick={() => navigate("/employees")}>Manage Employees</button>
-                            <button className="btn btn-primary" onClick={() => navigate("/salary-management")}>Salary Management</button>
+                            <button className="btn btn-primary" onClick={() => navigate("/create-employee")}>
+                                Create Employee
+                            </button>
+                            <button className="btn btn-primary" onClick={() => navigate("/employees")}>
+                                Manage Employees
+                            </button>
+                            <button className="btn btn-primary" onClick={() => navigate("/salary-management")}>
+                                Salary Management
+                            </button>
                         </>
                     )}
 
-                    <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
+                    <button className="btn btn-secondary" onClick={handleLogout}>
+                        Logout
+                    </button>
                 </div>
             </div>
         </div>

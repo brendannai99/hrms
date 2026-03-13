@@ -5,31 +5,30 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-function dbGet(sql, params = []) {
+function dbQuery(sql, params = []) {
     return new Promise((resolve, reject) => {
-        db.get(sql, params, (err, row) => {
+        db.query(sql, params, (err, results) => {
             if (err) reject(err);
-            else resolve(row);
+            else resolve(results);
         });
     });
 }
 
-function dbAll(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.all(sql, params, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
+async function dbGet(sql, params = []) {
+    const rows = await dbQuery(sql, params);
+    return rows[0] || null;
 }
 
-function dbRun(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve({ lastID: this.lastID, changes: this.changes });
-        });
-    });
+async function dbAll(sql, params = []) {
+    return await dbQuery(sql, params);
+}
+
+async function dbRun(sql, params = []) {
+    const result = await dbQuery(sql, params);
+    return {
+        lastID: result.insertId,
+        changes: result.affectedRows
+    };
 }
 
 async function addAuditLog(actorEmployeeId, action, targetType, targetId, details = null) {
@@ -48,6 +47,11 @@ function isValidDate(value) {
     return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
+function getLastDayOfMonth(payrollMonth) {
+    const [year, month] = payrollMonth.split("-").map(Number);
+    return new Date(year, month, 0).getDate();
+}
+
 async function getActiveSalaryRecord(employeeId, payrollMonth = null) {
     if (!payrollMonth) {
         return dbGet(
@@ -60,6 +64,9 @@ async function getActiveSalaryRecord(employeeId, payrollMonth = null) {
         );
     }
 
+    const lastDay = getLastDayOfMonth(payrollMonth);
+    const cutoffDate = `${payrollMonth}-${String(lastDay).padStart(2, "0")}`;
+
     return dbGet(
         `SELECT sr.*
          FROM salary_records sr
@@ -67,7 +74,7 @@ async function getActiveSalaryRecord(employeeId, payrollMonth = null) {
            AND sr.effective_date <= ?
          ORDER BY sr.effective_date DESC, sr.id DESC
          LIMIT 1`,
-        [employeeId, `${payrollMonth}-31`]
+        [employeeId, cutoffDate]
     );
 }
 
@@ -250,6 +257,7 @@ router.post("/payroll-records/issue", authMiddleware, roleMiddleware("admin"), a
              WHERE employee_id = ? AND payroll_month = ? AND status = 'issued'`,
             [employee_id, payroll_month]
         );
+
         if (existing) {
             return res.status(400).json({ error: "Salary has already been issued for this employee and month" });
         }
@@ -318,6 +326,7 @@ router.post("/payroll-records/issue-bulk", authMiddleware, roleMiddleware("admin
             );
 
             issued.push({ employee_id: employee.id, payroll_id: result.lastID });
+
             await addAuditLog(req.user.id, "ISSUE_PAYROLL", "payroll_record", result.lastID, {
                 employeeId: employee.id,
                 payrollMonth: payroll_month,
@@ -357,6 +366,7 @@ router.post("/payroll-records/:id/corrections", authMiddleware, roleMiddleware("
             `SELECT id FROM payroll_records WHERE correction_of_payroll_id = ? AND status = 'correction'`,
             [payrollId]
         );
+
         if (existingCorrection) {
             return res.status(400).json({ error: "A correction record already exists for this payroll" });
         }
@@ -391,9 +401,10 @@ router.post("/payroll-records/:id/corrections", authMiddleware, roleMiddleware("
 
         res.status(201).json({ message: "Correction record created successfully", id: result.lastID });
     } catch (error) {
-        if (String(error.message || "").includes("UNIQUE constraint failed")) {
+        if (String(error.message || "").includes("Duplicate entry")) {
             return res.status(400).json({ error: "Cannot create another issued payroll row for the same employee and month" });
         }
+
         res.status(500).json({ error: "Failed to create correction record" });
     }
 });

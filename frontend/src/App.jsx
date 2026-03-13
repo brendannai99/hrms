@@ -9,6 +9,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SalaryManagementPage from "./pages/SalaryManagementPage";
 import MySalaryPage from "./pages/MySalaryPage";
+import FirstTimePasswordPage from "./pages/FirstTimePasswordPage";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/salary-management" element={<SalaryManagementPage />} />
         <Route path="/my-salary" element={<MySalaryPage />} />
+        <Route path="/first-time-password" element={<FirstTimePasswordPage />} />
       </Routes>
     </BrowserRouter>
   );

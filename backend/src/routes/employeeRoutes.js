@@ -8,13 +8,16 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 const validRoles = ["employee", "manager", "admin"];
 
 router.get("/", authMiddleware, roleMiddleware("admin"), (req, res) => {
-    db.all(
-        "SELECT id, name, email, role, department, manager_id, created_at FROM employees",
-        [],
+    db.query(
+        "SELECT id, name, email, role, department, manager_id, created_at, must_change_password FROM employees",
         (err, rows) => {
             if (err) {
                 return res.status(500).json({ error: "Failed to fetch employees" });
             }
+
+            rows.forEach((row) => {
+                row.must_change_password = !!row.must_change_password;
+            });
 
             res.json(rows);
         }
@@ -28,19 +31,20 @@ router.get("/:id", authMiddleware, (req, res) => {
         return res.status(403).json({ error: "Access denied" });
     }
 
-    db.get(
-        "SELECT id, name, email, role, department, manager_id, created_at FROM employees WHERE id = ?",
+    db.query(
+        "SELECT id, name, email, role, department, manager_id, created_at, must_change_password FROM employees WHERE id = ?",
         [id],
-        (err, row) => {
+        (err, rows) => {
             if (err) {
                 return res.status(500).json({ error: "Failed to fetch employee" });
             }
 
-            if (!row) {
+            if (rows.length === 0) {
                 return res.status(404).json({ error: "Employee not found" });
             }
 
-            res.json(row);
+            rows[0].must_change_password = !!rows[0].must_change_password;
+            res.json(rows[0]);
         }
     );
 });
@@ -60,16 +64,16 @@ router.post("/", authMiddleware, roleMiddleware("admin"), async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const sql = `
-      INSERT INTO employees (name, email, password, role, department, manager_id)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+            INSERT INTO employees (name, email, password, role, department, manager_id, must_change_password)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
+        `;
 
-        db.run(
+        db.query(
             sql,
             [name, email, hashedPassword, role, department || null, manager_id || null],
-            function (err) {
+            (err, result) => {
                 if (err) {
-                    if (err.message.includes("UNIQUE")) {
+                    if (err.code === "ER_DUP_ENTRY") {
                         return res.status(400).json({ error: "Email already exists" });
                     }
 
@@ -78,7 +82,7 @@ router.post("/", authMiddleware, roleMiddleware("admin"), async (req, res) => {
 
                 res.status(201).json({
                     message: "Employee created successfully",
-                    id: this.lastID
+                    id: result.insertId
                 });
             }
         );
@@ -99,23 +103,23 @@ router.put("/:id", authMiddleware, roleMiddleware("admin"), (req, res) => {
         return res.status(400).json({ error: "Invalid role" });
     }
 
-    db.run(
+    db.query(
         `
-      UPDATE employees
-      SET name = ?, email = ?, department = ?, role = ?, manager_id = ?
-      WHERE id = ?
-    `,
+            UPDATE employees
+            SET name = ?, email = ?, department = ?, role = ?, manager_id = ?
+            WHERE id = ?
+        `,
         [name, email, department || null, role, manager_id || null, id],
-        function (err) {
+        (err, result) => {
             if (err) {
-                if (err.message.includes("UNIQUE")) {
+                if (err.code === "ER_DUP_ENTRY") {
                     return res.status(400).json({ error: "Email already exists" });
                 }
 
                 return res.status(500).json({ error: "Failed to update employee" });
             }
 
-            if (this.changes === 0) {
+            if (result.affectedRows === 0) {
                 return res.status(404).json({ error: "Employee not found" });
             }
 
