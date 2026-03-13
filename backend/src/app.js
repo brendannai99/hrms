@@ -6,6 +6,7 @@ require("./config/initDb");
 
 const employeeRoutes = require("./routes/employeeRoutes");
 const authRoutes = require("./routes/authRoutes");
+const salaryRoutes = require("./routes/salaryRoutes");
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.get("/", (req, res) => {
 
 app.use("/employees", employeeRoutes);
 app.use("/auth", authRoutes);
+app.use("/salary", salaryRoutes);
 
 module.exports = app;
