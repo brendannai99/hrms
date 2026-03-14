@@ -4,12 +4,15 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
+const { addAuditLog } = require("../utils/auditLogger");
 
 const validRoles = ["employee", "manager", "admin"];
 
 router.get("/", authMiddleware, roleMiddleware("admin"), (req, res) => {
     db.query(
-        "SELECT id, name, email, role, department, manager_id, created_at, must_change_password FROM employees",
+        `SELECT id, name, email, role, department, manager_id, created_at,
+                must_change_password, failed_login_attempts, locked_until
+         FROM employees`,
         (err, rows) => {
             if (err) {
                 return res.status(500).json({ error: "Failed to fetch employees" });
@@ -32,7 +35,10 @@ router.get("/:id", authMiddleware, (req, res) => {
     }
 
     db.query(
-        "SELECT id, name, email, role, department, manager_id, created_at, must_change_password FROM employees WHERE id = ?",
+        `SELECT id, name, email, role, department, manager_id, created_at,
+                must_change_password, failed_login_attempts, locked_until
+         FROM employees
+         WHERE id = ?`,
         [id],
         (err, rows) => {
             if (err) {
@@ -71,7 +77,7 @@ router.post("/", authMiddleware, roleMiddleware("admin"), async (req, res) => {
         db.query(
             sql,
             [name, email, hashedPassword, role, department || null, manager_id || null],
-            (err, result) => {
+            async (err, result) => {
                 if (err) {
                     if (err.code === "ER_DUP_ENTRY") {
                         return res.status(400).json({ error: "Email already exists" });
@@ -79,6 +85,12 @@ router.post("/", authMiddleware, roleMiddleware("admin"), async (req, res) => {
 
                     return res.status(500).json({ error: "Failed to create employee" });
                 }
+
+                await addAuditLog(req.user.id, "EMPLOYEE_CREATED", "employee", result.insertId, {
+                    email,
+                    role,
+                    department: department || null
+                }).catch(() => { });
 
                 res.status(201).json({
                     message: "Employee created successfully",
@@ -110,7 +122,7 @@ router.put("/:id", authMiddleware, roleMiddleware("admin"), (req, res) => {
             WHERE id = ?
         `,
         [name, email, department || null, role, manager_id || null, id],
-        (err, result) => {
+        async (err, result) => {
             if (err) {
                 if (err.code === "ER_DUP_ENTRY") {
                     return res.status(400).json({ error: "Email already exists" });
@@ -123,7 +135,39 @@ router.put("/:id", authMiddleware, roleMiddleware("admin"), (req, res) => {
                 return res.status(404).json({ error: "Employee not found" });
             }
 
+            await addAuditLog(req.user.id, "EMPLOYEE_UPDATED", "employee", Number(id), {
+                name,
+                email,
+                role,
+                department: department || null,
+                manager_id: manager_id || null
+            }).catch(() => { });
+
             res.json({ message: "Employee updated successfully" });
+        }
+    );
+});
+
+router.put("/:id/unlock", authMiddleware, roleMiddleware("admin"), (req, res) => {
+    const { id } = req.params;
+
+    db.query(
+        "UPDATE employees SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?",
+        [id],
+        async (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: "Failed to unlock employee account" });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: "Employee not found" });
+            }
+
+            await addAuditLog(req.user.id, "ACCOUNT_UNLOCKED", "employee", Number(id), {
+                unlockedByAdminId: req.user.id
+            }).catch(() => { });
+
+            res.json({ message: "Employee account unlocked successfully" });
         }
     );
 });

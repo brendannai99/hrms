@@ -2,8 +2,27 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
+function formatDetails(details) {
+  if (!details) return "-";
+
+  try {
+    const parsed = typeof details === "string" ? JSON.parse(details) : details;
+
+    if (parsed.failedAttempt) {
+      return `Failed attempt ${parsed.failedAttempt}`;
+    }
+
+    return Object.entries(parsed)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(" | ");
+  } catch {
+    return details;
+  }
+}
+
 function ManageEmployeesPage() {
   const [employees, setEmployees] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -25,6 +44,15 @@ function ManageEmployeesPage() {
     }
   };
 
+  const fetchAuditLogs = async () => {
+    try {
+      const res = await api.get("/salary/audit-logs");
+      setAuditLogs(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to fetch audit logs");
+    }
+  };
+
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -36,7 +64,7 @@ function ManageEmployeesPage() {
           return;
         }
 
-        fetchEmployees();
+        await Promise.all([fetchEmployees(), fetchAuditLogs()]);
       } catch {
         localStorage.removeItem("token");
         navigate("/");
@@ -83,9 +111,22 @@ function ManageEmployeesPage() {
       const res = await api.put(`/employees/${id}`, editForm);
       setMessage(res.data.message);
       setEditingEmployeeId(null);
-      fetchEmployees();
+      await Promise.all([fetchEmployees(), fetchAuditLogs()]);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update employee");
+    }
+  };
+
+  const handleUnlock = async (id) => {
+    setMessage("");
+    setError("");
+
+    try {
+      const res = await api.put(`/employees/${id}/unlock`);
+      setMessage(res.data.message);
+      await Promise.all([fetchEmployees(), fetchAuditLogs()]);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to unlock employee account");
     }
   };
 
@@ -109,96 +150,155 @@ function ManageEmployeesPage() {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Department</th>
+                <th>Failed Attempts</th>
+                <th>Locked Until</th>
                 <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {employees.map((employee) => (
-                <tr key={employee.id}>
-                  <td>
-                    {editingEmployeeId === employee.id ? (
-                      <input
-                        className="form-input"
-                        name="name"
-                        value={editForm.name}
-                        onChange={handleChange}
-                      />
-                    ) : (
-                      employee.name
-                    )}
-                  </td>
+              {employees.map((employee) => {
+                const isLocked =
+                  employee.locked_until && new Date(employee.locked_until) > new Date();
 
-                  <td>
-                    {editingEmployeeId === employee.id ? (
-                      <input
-                        className="form-input"
-                        name="email"
-                        value={editForm.email}
-                        onChange={handleChange}
-                      />
-                    ) : (
-                      employee.email
-                    )}
-                  </td>
+                return (
+                  <tr key={employee.id}>
+                    <td>
+                      {editingEmployeeId === employee.id ? (
+                        <input
+                          className="form-input"
+                          name="name"
+                          value={editForm.name}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        employee.name
+                      )}
+                    </td>
 
-                  <td>
-                    {editingEmployeeId === employee.id ? (
-                      <select
-                        className="form-select"
-                        name="role"
-                        value={editForm.role}
-                        onChange={handleChange}
-                      >
-                        <option value="employee">employee</option>
-                        <option value="manager">manager</option>
-                        <option value="admin">admin</option>
-                      </select>
-                    ) : (
-                      employee.role
-                    )}
-                  </td>
+                    <td>
+                      {editingEmployeeId === employee.id ? (
+                        <input
+                          className="form-input"
+                          name="email"
+                          value={editForm.email}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        employee.email
+                      )}
+                    </td>
 
-                  <td>
-                    {editingEmployeeId === employee.id ? (
-                      <input
-                        className="form-input"
-                        name="department"
-                        value={editForm.department}
-                        onChange={handleChange}
-                      />
-                    ) : (
-                      employee.department
-                    )}
-                  </td>
-
-                  <td>
-                    {editingEmployeeId === employee.id ? (
-                      <div className="button-row">
-                        <button
-                          className="btn btn-success"
-                          onClick={() => handleSave(employee.id)}
+                    <td>
+                      {editingEmployeeId === employee.id ? (
+                        <select
+                          className="form-select"
+                          name="role"
+                          value={editForm.role}
+                          onChange={handleChange}
                         >
-                          Save
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          onClick={handleCancelEdit}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleEditClick(employee)}
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </td>
+                          <option value="employee">employee</option>
+                          <option value="manager">manager</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      ) : (
+                        employee.role
+                      )}
+                    </td>
+
+                    <td>
+                      {editingEmployeeId === employee.id ? (
+                        <input
+                          className="form-input"
+                          name="department"
+                          value={editForm.department}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        employee.department
+                      )}
+                    </td>
+
+                    <td>{employee.failed_login_attempts || 0}</td>
+                    <td>{employee.locked_until || "-"}</td>
+
+                    <td>
+                      {editingEmployeeId === employee.id ? (
+                        <div className="button-row">
+                          <button
+                            className="btn btn-success"
+                            onClick={() => handleSave(employee.id)}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="button-row">
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => handleEditClick(employee)}
+                          >
+                            Edit
+                          </button>
+
+                          {isLocked && (
+                            <button
+                              className="btn btn-warning"
+                              onClick={() => handleUnlock(employee.id)}
+                            >
+                              Unlock
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <h2 className="page-title" style={{ marginTop: "32px", fontSize: "2rem" }}>
+          Audit Trail
+        </h2>
+
+        <div className="table-wrapper">
+          <table className="employee-table">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Target Type</th>
+                <th>Target ID</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {auditLogs.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="center-text">No audit records yet.</td>
                 </tr>
-              ))}
+              ) : (
+                auditLogs.map((log) => (
+                  <tr key={log.id}>
+                    <td>{log.created_at}</td>
+                    <td>{log.actor_name || "System"}</td>
+                    <td>{log.action}</td>
+                    <td>{log.target_type}</td>
+                    <td>{log.target_id || "-"}</td>
+                    <td>{formatDetails(log.details)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

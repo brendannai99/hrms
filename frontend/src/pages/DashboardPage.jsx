@@ -16,7 +16,7 @@ function DashboardPage() {
                     navigate("/first-time-password");
                     return;
                 }
-                
+
                 setUser(res.data);
             } catch {
                 setError("Failed to load user");
@@ -28,9 +28,16 @@ function DashboardPage() {
         fetchUser();
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/");
+    const handleLogout = async () => {
+        try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            await api.post("/auth/logout", { refreshToken });
+        } catch {
+        } finally {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            navigate("/");
+        }
     };
 
     if (error) {

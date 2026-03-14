@@ -13,9 +13,13 @@ function LoginPage() {
         setError("");
 
         try {
-            const res = await api.post("/auth/login", { email, password });
+            const res = await api.post("/auth/login", {
+                email: email.trim(),
+                password
+            });
 
             localStorage.setItem("token", res.data.token);
+            localStorage.setItem("refreshToken", res.data.refreshToken);
 
             if (res.data.user.must_change_password) {
                 navigate("/first-time-password");
@@ -34,12 +38,14 @@ function LoginPage() {
 
                 {error && <div className="error">{error}</div>}
 
-                <form className="form-layout" onSubmit={handleLogin}>
+                <form className="form-layout" onSubmit={handleLogin} autoComplete="off">
                     <div className="form-group">
                         <label>Email</label>
                         <input
                             className="form-input"
                             type="email"
+                            name="email"
+                            autoComplete="off"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -50,6 +56,8 @@ function LoginPage() {
                         <input
                             className="form-input"
                             type="password"
+                            name="password"
+                            autoComplete="new-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />

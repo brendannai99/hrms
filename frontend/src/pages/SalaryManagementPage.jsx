@@ -152,7 +152,6 @@ function SalaryManagementPage() {
   const [user, setUser] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [payrolls, setPayrolls] = useState([]);
-  const [auditLogs, setAuditLogs] = useState([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [salaryForm, setSalaryForm] = useState({
@@ -172,11 +171,10 @@ function SalaryManagementPage() {
 
   const loadPage = async () => {
     try {
-      const [meRes, salaryRes, payrollRes, auditRes] = await Promise.all([
+      const [meRes, salaryRes, payrollRes] = await Promise.all([
         api.get("/auth/me"),
         api.get("/salary/salary-records"),
         api.get("/salary/payroll-records"),
-        api.get("/salary/audit-logs"),
       ]);
 
       if (meRes.data.role !== "admin") {
@@ -187,7 +185,6 @@ function SalaryManagementPage() {
       setUser(meRes.data);
       setEmployees(salaryRes.data);
       setPayrolls(payrollRes.data);
-      setAuditLogs(auditRes.data);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to load salary management page");
       localStorage.removeItem("token");
@@ -701,56 +698,6 @@ function SalaryManagementPage() {
                           <TableCell sx={tableBodyCellSx}>{payroll.issued_by_name || "-"}</TableCell>
                           <TableCell sx={tableBodyCellSx}>{payroll.issued_at}</TableCell>
                           <TableCell sx={tableBodyCellSx}>{payroll.remarks || "-"}</TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-
-            <Divider sx={{ borderColor: borderColor }} />
-
-            <Box>
-              <Typography variant="h4" fontWeight={800} color="#fff" sx={{ mb: 2 }}>
-                Audit Log
-              </Typography>
-
-              <TableContainer
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  border: `1px solid ${borderColor}`,
-                  backgroundColor: cardBg,
-                }}
-              >
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={tableHeadCellSx}>When</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Actor</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Action</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Target Type</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Target ID</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Details</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {auditLogs.length === 0 ? (
-                      <TableRow>
-                        <TableCell sx={tableBodyCellSx} colSpan={6}>
-                          No audit records yet.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      auditLogs.map((log) => (
-                        <TableRow key={log.id} hover>
-                          <TableCell sx={tableBodyCellSx}>{log.created_at}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{log.actor_name || "System"}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{log.action}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{log.target_type}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{log.target_id || "-"}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{log.details || "-"}</TableCell>
                         </TableRow>
                       ))
                     )}
