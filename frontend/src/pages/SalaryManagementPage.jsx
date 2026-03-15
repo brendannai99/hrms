@@ -361,86 +361,100 @@ function SalaryManagementPage() {
               </Typography>
 
               <Box component="form" onSubmit={handleSalarySubmit}>
-                <Grid container spacing={2} alignItems="stretch">
-                  <Grid item xs={12} md={4}>
-                    <FormControl fullWidth required sx={selectSx}>
-                      <InputLabel id="salary-employee-label">Employee</InputLabel>
-                      <Select
-                        labelId="salary-employee-label"
-                        label="Employee"
-                        name="employee_id"
-                        value={salaryForm.employee_id}
-                        onChange={onSalaryChange}
-                        MenuProps={employeeMenuProps}
-                        renderValue={(selected) => {
-                          if (!selected) return "Select employee";
-                          const employee = employees.find(
-                            (item) => String(item.employee_id) === String(selected)
-                          );
-                          return employee
-                            ? `${employee.name} (${employee.email})`
-                            : "Select employee";
-                        }}
-                      >
-                        <MenuItem value="">
-                          <em>Select employee</em>
-                        </MenuItem>
-                        {employees.map((employee) => (
-                          <MenuItem key={employee.employee_id} value={employee.employee_id}>
-                            {employee.name} ({employee.email})
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Base Salary"
-                      name="base_salary"
-                      type="number"
-                      inputProps={{ min: 0, step: "0.01" }}
-                      value={salaryForm.base_salary}
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      md: "minmax(320px, 2.4fr) minmax(220px, 1.25fr) minmax(220px, 1.25fr) minmax(190px, 1fr)",
+                    },
+                    gap: 2,
+                    alignItems: "start",
+                  }}
+                >
+                  <FormControl
+                    fullWidth
+                    required
+                    sx={{
+                      ...selectSx,
+                      minWidth: 0,
+                      "& .MuiSelect-select": {
+                        ...selectSx["& .MuiSelect-select"],
+                        minWidth: 260,
+                      },
+                    }}
+                  >
+                    <InputLabel id="salary-employee-label">Employee</InputLabel>
+                    <Select
+                      labelId="salary-employee-label"
+                      label="Employee"
+                      name="employee_id"
+                      value={salaryForm.employee_id}
                       onChange={onSalaryChange}
-                      sx={inputSx}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Effective Date"
-                      name="effective_date"
-                      type="date"
-                      value={salaryForm.effective_date}
-                      onChange={onSalaryChange}
-                      InputLabelProps={{ shrink: true }}
-                      sx={inputSx}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={2}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      type="submit"
-                      sx={{
-                        minHeight: 56,
-                        height: "100%",
-                        borderRadius: 1.5,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        bgcolor: "#5b93ff",
-                        "&:hover": { bgcolor: "#4c82ec" },
+                      MenuProps={employeeMenuProps}
+                      renderValue={(selected) => {
+                        if (!selected) return "Select employee";
+                        const employee = employees.find(
+                          (item) => String(item.employee_id) === String(selected)
+                        );
+                        return employee
+                          ? `${employee.name} (${employee.email})`
+                          : "Select employee";
                       }}
                     >
-                      Save Salary Version
-                    </Button>
-                  </Grid>
-                </Grid>
+                      <MenuItem value="">
+                        <em>Select employee</em>
+                      </MenuItem>
+                      {employees.map((employee) => (
+                        <MenuItem key={employee.employee_id} value={employee.employee_id}>
+                          {employee.name} ({employee.email})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <TextField
+                    fullWidth
+                    required
+                    label="Base Salary"
+                    name="base_salary"
+                    type="number"
+                    inputProps={{ min: 0, step: "0.01" }}
+                    value={salaryForm.base_salary}
+                    onChange={onSalaryChange}
+                    sx={inputSx}
+                  />
+
+                  <TextField
+                    fullWidth
+                    required
+                    label="Effective Date"
+                    name="effective_date"
+                    type="date"
+                    value={salaryForm.effective_date}
+                    onChange={onSalaryChange}
+                    InputLabelProps={{ shrink: true }}
+                    sx={inputSx}
+                  />
+
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    type="submit"
+                    sx={{
+                      minHeight: 56,
+                      borderRadius: 1.5,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      px: 3,
+                      whiteSpace: "nowrap",
+                      bgcolor: "#5b93ff",
+                      "&:hover": { bgcolor: "#4c82ec" },
+                    }}
+                  >
+                    Save Salary Version
+                  </Button>
+                </Box>
               </Box>
 
               <Typography color={mutedText} sx={{ mt: 1.5 }}>
@@ -456,100 +470,103 @@ function SalaryManagementPage() {
               </Typography>
 
               <Box component="form" onSubmit={handleIssueSubmit}>
-                <Grid container spacing={2} alignItems="stretch">
-                  <Grid item xs={12} md={4}>
-                    <FormControl fullWidth required sx={selectSx}>
-                      <InputLabel id="issue-employee-label">Employee</InputLabel>
-                      <Select
-                        labelId="issue-employee-label"
-                        label="Employee"
-                        name="employee_id"
-                        value={issueForm.employee_id}
-                        onChange={onIssueChange}
-                        MenuProps={employeeMenuProps}
-                        renderValue={(selected) => {
-                          if (!selected) return "Select employee";
-                          const employee = employees.find(
-                            (item) => String(item.employee_id) === String(selected)
-                          );
-                          return employee
-                            ? `${employee.name} (${employee.email})`
-                            : "Select employee";
-                        }}
-                      >
-                        <MenuItem value="">
-                          <em>Select employee</em>
-                        </MenuItem>
-                        {employees.map((employee) => (
-                          <MenuItem key={employee.employee_id} value={employee.employee_id}>
-                            {employee.name} ({employee.email})
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={2}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Payroll Month"
-                      name="payroll_month"
-                      type="month"
-                      value={issueForm.payroll_month}
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      md: "minmax(320px, 2.4fr) minmax(180px, 1.1fr) minmax(180px, 1.1fr) minmax(170px, 0.9fr)",
+                    },
+                    gap: 2,
+                    alignItems: "start",
+                  }}
+                >
+                  <FormControl fullWidth required sx={selectSx}>
+                    <InputLabel id="issue-employee-label">Employee</InputLabel>
+                    <Select
+                      labelId="issue-employee-label"
+                      label="Employee"
+                      name="employee_id"
+                      value={issueForm.employee_id}
                       onChange={onIssueChange}
-                      InputLabelProps={{ shrink: true }}
-                      sx={inputSx}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={3}>
-                    <TextField
-                      fullWidth
-                      label="Deductions"
-                      name="deduction_amount"
-                      type="number"
-                      inputProps={{ min: 0, step: "0.01" }}
-                      value={issueForm.deduction_amount}
-                      onChange={onIssueChange}
-                      sx={inputSx}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={3}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="success"
-                      type="submit"
-                      sx={{
-                        minHeight: 56,
-                        height: "100%",
-                        borderRadius: 1.5,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        bgcolor: "#33a266",
-                        "&:hover": { bgcolor: "#2c8c59" },
+                      MenuProps={employeeMenuProps}
+                      renderValue={(selected) => {
+                        if (!selected) return "Select employee";
+                        const employee = employees.find(
+                          (item) => String(item.employee_id) === String(selected)
+                        );
+                        return employee
+                          ? `${employee.name} (${employee.email})`
+                          : "Select employee";
                       }}
                     >
-                      Issue Payroll
-                    </Button>
-                  </Grid>
+                      <MenuItem value="">
+                        <em>Select employee</em>
+                      </MenuItem>
+                      {employees.map((employee) => (
+                        <MenuItem key={employee.employee_id} value={employee.employee_id}>
+                          {employee.name} ({employee.email})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={3}
-                      label="Remarks"
-                      name="remarks"
-                      value={issueForm.remarks}
-                      onChange={onIssueChange}
-                      placeholder="Optional note such as CPF employee contribution"
-                      sx={inputSx}
-                    />
-                  </Grid>
-                </Grid>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Payroll Month"
+                    name="payroll_month"
+                    type="month"
+                    value={issueForm.payroll_month}
+                    onChange={onIssueChange}
+                    InputLabelProps={{ shrink: true }}
+                    sx={inputSx}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Deductions"
+                    name="deduction_amount"
+                    type="number"
+                    inputProps={{ min: 0, step: "0.01" }}
+                    value={issueForm.deduction_amount}
+                    onChange={onIssueChange}
+                    sx={inputSx}
+                  />
+
+                  <Button
+                    variant="contained"
+                    color="success"
+                    type="submit"
+                    sx={{
+                      minHeight: 56,
+                      borderRadius: 1.5,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      px: 3,
+                      whiteSpace: "nowrap",
+                      bgcolor: "#33a266",
+                      "&:hover": { bgcolor: "#2c8c59" },
+                    }}
+                  >
+                    Issue Payroll
+                  </Button>
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label="Remarks"
+                    name="remarks"
+                    value={issueForm.remarks}
+                    onChange={onIssueChange}
+                    placeholder="Optional note such as CPF employee contribution"
+                    sx={{
+                      ...inputSx,
+                      gridColumn: { xs: "1 / -1", md: "1 / span 3" },
+                    }}
+                  />
+                </Box>
               </Box>
 
               <Stack
