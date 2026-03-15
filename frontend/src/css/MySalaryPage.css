@@ -1,0 +1,97 @@
+body {
+  background-color: #2b3145;
+}
+
+
+.my-salary-page {
+  min-height: 100vh;
+  background-color: #2b3145;
+  padding: 24px 0;
+}
+
+.my-salary-panel,
+.my-salary-card {
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24px;
+  box-shadow: none;
+}
+
+.my-salary-panel {
+  background-color: #2b3145;
+}
+
+.my-salary-card {
+  background-color: #24293b;
+  padding: 20px;
+  height: 100%;
+}
+
+.my-salary-title,
+.my-salary-section-title,
+.my-salary-card-value,
+.my-salary-table-cell {
+  color: #fff;
+}
+
+.my-salary-muted-text {
+  color: rgba(255,255,255,0.72);
+}
+
+.my-salary-info-alert {
+  border-radius: 16px !important;
+  background-color: rgba(91,147,255,0.12) !important;
+  color: #dbe7ff !important;
+  border: 1px solid rgba(91,147,255,0.3) !important;
+}
+
+.my-salary-info-alert .MuiAlert-icon {
+  color: #9db9ff;
+}
+
+.my-salary-table-container {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  background-color: #24293b;
+}
+
+.my-salary-table-head-cell {
+  color: #fff !important;
+  font-weight: 700 !important;
+  background-color: #39415a !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+  white-space: nowrap;
+}
+
+.my-salary-table-body-cell {
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+  vertical-align: top;
+}
+
+.my-salary-chip {
+  color: #fff !important;
+  text-transform: capitalize;
+}
+
+.my-salary-chip-issued {
+  border-color: #5b93ff !important;
+  background-color: rgba(91,147,255,0.12) !important;
+}
+
+.my-salary-chip-correction {
+  border-color: #f0ad4e !important;
+  background-color: rgba(240,173,78,0.12) !important;
+}
+
+.my-salary-back-btn {
+  border-radius: 12px !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+  background-color: #7a849e !important;
+}
+
+.my-salary-back-btn:hover {
+  background-color: #6b758d !important;
+}

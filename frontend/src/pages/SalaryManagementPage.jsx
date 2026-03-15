@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import "../css/SalaryManagement.css";
 
 import {
   Alert,
@@ -44,108 +45,10 @@ function todayValue() {
   return new Date().toISOString().slice(0, 10);
 }
 
-const pageBg = "#2b3145";
-const panelBg = "#2b3145";
-const fieldBg = "#1f2436";
-const borderColor = "rgba(255,255,255,0.12)";
-const mutedText = "rgba(255,255,255,0.72)";
-const tableHeadBg = "#39415a";
-const cardBg = "#24293b";
-
-const paperSx = {
-  backgroundColor: panelBg,
-  color: "#fff",
-  border: `1px solid ${borderColor}`,
-  borderRadius: 3,
-  boxShadow: "none",
-};
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: fieldBg,
-    color: "#fff",
-    borderRadius: 1.5,
-    minHeight: 56,
-    "& fieldset": {
-      borderColor: "rgba(255,255,255,0.25)",
-    },
-    "&:hover fieldset": {
-      borderColor: "rgba(255,255,255,0.4)",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#5b93ff",
-    },
-    "& input": {
-      color: "#fff",
-    },
-    "& textarea": {
-      color: "#fff",
-    },
-  },
-  "& .MuiInputLabel-root": {
-    color: "rgba(255,255,255,0.75)",
-  },
-  "& .MuiInputLabel-root.Mui-focused": {
-    color: "#9db9ff",
-  },
-  "& .MuiSvgIcon-root": {
-    color: "rgba(255,255,255,0.75)",
-  },
-};
-
-const selectSx = {
-  ...inputSx,
-  "& .MuiOutlinedInput-root": {
-    ...inputSx["& .MuiOutlinedInput-root"],
-    alignItems: "center",
-  },
-  "& .MuiSelect-select": {
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    minHeight: "20px",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    paddingRight: "36px !important",
-  },
-};
-
 const employeeMenuProps = {
   PaperProps: {
-    sx: {
-      bgcolor: fieldBg,
-      color: "#fff",
-      border: `1px solid ${borderColor}`,
-      minWidth: 320,
-      maxWidth: 520,
-      "& .MuiMenuItem-root": {
-        whiteSpace: "normal",
-        wordBreak: "break-word",
-        lineHeight: 1.35,
-        py: 1.2,
-      },
-      "& .MuiMenuItem-root:hover": {
-        bgcolor: "rgba(91,147,255,0.15)",
-      },
-      "& .MuiMenuItem-root.Mui-selected": {
-        bgcolor: "rgba(91,147,255,0.22)",
-      },
-    },
+    className: "salary-management-menu-paper",
   },
-};
-
-const tableHeadCellSx = {
-  color: "#fff",
-  fontWeight: 700,
-  backgroundColor: tableHeadBg,
-  borderBottom: `1px solid ${borderColor}`,
-  whiteSpace: "nowrap",
-};
-
-const tableBodyCellSx = {
-  color: "#fff",
-  borderBottom: `1px solid ${borderColor}`,
 };
 
 function SalaryManagementPage() {
@@ -284,25 +187,18 @@ function SalaryManagementPage() {
 
   if (!user) {
     return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          backgroundColor: pageBg,
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        <Typography color="#fff">Loading...</Typography>
+      <Box className="salary-management-page" sx={{ minHeight: "100vh", backgroundColor: "#2b3145", display: "grid", placeItems: "center", py: 3 }}>
+        <Typography className="salary-management-loading">Loading...</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: pageBg, py: 1 }}>
-      <Container maxWidth="xl" sx={{ py: 0 }}>
-        <Paper sx={{ ...paperSx, p: { xs: 2, md: 3 } }}>
+    <Box className="salary-management-page" sx={{ minHeight: "100vh", backgroundColor: "#2b3145", py: 3 }}>
+      <Container maxWidth="xl" className="salary-management-container" sx={{ py: 0 }}>
+        <Paper className="salary-management-panel" sx={{ p: { xs: 2, md: 3 }, backgroundColor: "#2b3145", color: "#fff", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 3, boxShadow: "none" }}>
           <Stack spacing={3}>
-            <Typography variant="h3" fontWeight={800} color="#fff">
+            <Typography variant="h3" fontWeight={800} className="salary-management-title">
               Salary Management & Monthly Payroll
             </Typography>
 
@@ -320,70 +216,49 @@ function SalaryManagementPage() {
 
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={4}>
-                <Paper sx={{ ...paperSx, backgroundColor: cardBg, p: 2 }}>
-                  <Typography color={mutedText} variant="body2">
+                <Paper className="salary-management-card" sx={{ p: 2, backgroundColor: "#24293b", color: "#fff", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 3, boxShadow: "none" }}>
+                  <Typography className="salary-management-muted-text" variant="body2">
                     Employees With Salary
                   </Typography>
-                  <Typography variant="h4" fontWeight={800} color="#fff" sx={{ mt: 0.5 }}>
+                  <Typography variant="h4" fontWeight={800} className="salary-management-card-value" sx={{ mt: 0.5 }}>
                     {totals.employeesWithSalary}
                   </Typography>
                 </Paper>
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Paper sx={{ ...paperSx, backgroundColor: cardBg, p: 2 }}>
-                  <Typography color={mutedText} variant="body2">
+                <Paper className="salary-management-card" sx={{ p: 2, backgroundColor: "#24293b", color: "#fff", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 3, boxShadow: "none" }}>
+                  <Typography className="salary-management-muted-text" variant="body2">
                     Payroll Issued Rows
                   </Typography>
-                  <Typography variant="h4" fontWeight={800} color="#fff" sx={{ mt: 0.5 }}>
+                  <Typography variant="h4" fontWeight={800} className="salary-management-card-value" sx={{ mt: 0.5 }}>
                     {totals.payrollsIssued}
                   </Typography>
                 </Paper>
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Paper sx={{ ...paperSx, backgroundColor: cardBg, p: 2 }}>
-                  <Typography color={mutedText} variant="body2">
+                <Paper className="salary-management-card" sx={{ p: 2, backgroundColor: "#24293b", color: "#fff", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 3, boxShadow: "none" }}>
+                  <Typography className="salary-management-muted-text" variant="body2">
                     Correction Rows
                   </Typography>
-                  <Typography variant="h4" fontWeight={800} color="#fff" sx={{ mt: 0.5 }}>
+                  <Typography variant="h4" fontWeight={800} className="salary-management-card-value" sx={{ mt: 0.5 }}>
                     {totals.corrections}
                   </Typography>
                 </Paper>
               </Grid>
             </Grid>
 
-            <Divider sx={{ borderColor: borderColor }} />
+            <Divider className="salary-management-divider" />
 
             <Box>
-              <Typography variant="h5" fontWeight={800} color="#fff" sx={{ mb: 2 }}>
+              <Typography variant="h5" fontWeight={800} className="salary-management-section-title" sx={{ mb: 2 }}>
                 Admin-Only Salary Update
               </Typography>
 
               <Box component="form" onSubmit={handleSalarySubmit}>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      md: "minmax(320px, 2.4fr) minmax(220px, 1.25fr) minmax(220px, 1.25fr) minmax(190px, 1fr)",
-                    },
-                    gap: 2,
-                    alignItems: "start",
-                  }}
-                >
-                  <FormControl
-                    fullWidth
-                    required
-                    sx={{
-                      ...selectSx,
-                      minWidth: 0,
-                      "& .MuiSelect-select": {
-                        ...selectSx["& .MuiSelect-select"],
-                        minWidth: 260,
-                      },
-                    }}
-                  >
+                <Box className="salary-management-form-grid salary-management-salary-grid">
+                  <FormControl fullWidth required className="salary-management-input salary-management-select salary-management-salary-select">
                     <InputLabel id="salary-employee-label">Employee</InputLabel>
                     <Select
                       labelId="salary-employee-label"
@@ -422,7 +297,7 @@ function SalaryManagementPage() {
                     inputProps={{ min: 0, step: "0.01" }}
                     value={salaryForm.base_salary}
                     onChange={onSalaryChange}
-                    sx={inputSx}
+                    className="salary-management-input"
                   />
 
                   <TextField
@@ -434,54 +309,30 @@ function SalaryManagementPage() {
                     value={salaryForm.effective_date}
                     onChange={onSalaryChange}
                     InputLabelProps={{ shrink: true }}
-                    sx={inputSx}
+                    className="salary-management-input"
                   />
 
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    type="submit"
-                    sx={{
-                      minHeight: 56,
-                      borderRadius: 1.5,
-                      textTransform: "none",
-                      fontWeight: 700,
-                      px: 3,
-                      whiteSpace: "nowrap",
-                      bgcolor: "#5b93ff",
-                      "&:hover": { bgcolor: "#4c82ec" },
-                    }}
-                  >
+                  <Button fullWidth variant="contained" type="submit" className="salary-management-submit-btn">
                     Save Salary Version
                   </Button>
                 </Box>
               </Box>
 
-              <Typography color={mutedText} sx={{ mt: 1.5 }}>
+              <Typography className="salary-management-muted-text" sx={{ mt: 1.5 }}>
                 Each salary update creates a new record. Existing salary rows are not overwritten.
               </Typography>
             </Box>
 
-            <Divider sx={{ borderColor: borderColor }} />
+            <Divider className="salary-management-divider" />
 
             <Box>
-              <Typography variant="h5" fontWeight={800} color="#fff" sx={{ mb: 2 }}>
+              <Typography variant="h5" fontWeight={800} className="salary-management-section-title" sx={{ mb: 2 }}>
                 Monthly Salary Issuance
               </Typography>
 
               <Box component="form" onSubmit={handleIssueSubmit}>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      md: "minmax(320px, 2.4fr) minmax(180px, 1.1fr) minmax(180px, 1.1fr) minmax(170px, 0.9fr)",
-                    },
-                    gap: 2,
-                    alignItems: "start",
-                  }}
-                >
-                  <FormControl fullWidth required sx={selectSx}>
+                <Box className="salary-management-form-grid salary-management-issue-grid">
+                  <FormControl fullWidth required className="salary-management-input salary-management-select">
                     <InputLabel id="issue-employee-label">Employee</InputLabel>
                     <Select
                       labelId="issue-employee-label"
@@ -520,7 +371,7 @@ function SalaryManagementPage() {
                     value={issueForm.payroll_month}
                     onChange={onIssueChange}
                     InputLabelProps={{ shrink: true }}
-                    sx={inputSx}
+                    className="salary-management-input"
                   />
 
                   <TextField
@@ -531,24 +382,10 @@ function SalaryManagementPage() {
                     inputProps={{ min: 0, step: "0.01" }}
                     value={issueForm.deduction_amount}
                     onChange={onIssueChange}
-                    sx={inputSx}
+                    className="salary-management-input"
                   />
 
-                  <Button
-                    variant="contained"
-                    color="success"
-                    type="submit"
-                    sx={{
-                      minHeight: 56,
-                      borderRadius: 1.5,
-                      textTransform: "none",
-                      fontWeight: 700,
-                      px: 3,
-                      whiteSpace: "nowrap",
-                      bgcolor: "#33a266",
-                      "&:hover": { bgcolor: "#2c8c59" },
-                    }}
-                  >
+                  <Button variant="contained" color="success" type="submit" className="salary-management-issue-btn">
                     Issue Payroll
                   </Button>
 
@@ -561,10 +398,8 @@ function SalaryManagementPage() {
                     value={issueForm.remarks}
                     onChange={onIssueChange}
                     placeholder="Optional note such as CPF employee contribution"
-                    sx={{
-                      ...inputSx,
-                      gridColumn: { xs: "1 / -1", md: "1 / span 3" },
-                    }}
+                    className="salary-management-input salary-management-remarks-field"
+                    sx={{ gridColumn: { xs: "1 / -1" } }}
                   />
                 </Box>
               </Box>
@@ -579,70 +414,56 @@ function SalaryManagementPage() {
                   type="month"
                   value={bulkMonth}
                   onChange={(e) => setBulkMonth(e.target.value)}
-                  sx={{ ...inputSx, width: { xs: "100%", sm: 175 } }}
+                  className="salary-management-input salary-management-bulk-month"
                 />
                 <Button
                   variant="contained"
                   type="button"
                   onClick={handleBulkIssue}
-                  sx={{
-                    minHeight: 40,
-                    width: { xs: "100%", sm: 160 },
-                    borderRadius: 1.5,
-                    textTransform: "none",
-                    fontWeight: 700,
-                    bgcolor: "#5b93ff",
-                    "&:hover": { bgcolor: "#4c82ec" },
-                  }}
+                  className="salary-management-bulk-btn"
+                  sx={{ width: { xs: "100%", sm: 160 } }}
                 >
                   Issue Bulk Payroll
                 </Button>
               </Stack>
 
-              <Typography color={mutedText} sx={{ mt: 1.5 }}>
+              <Typography className="salary-management-muted-text" sx={{ mt: 1.5 }}>
                 The system prevents issuing salary twice for the same employee and month.
               </Typography>
             </Box>
 
-            <Divider sx={{ borderColor: borderColor }} />
+            <Divider className="salary-management-divider" />
 
             <Box>
-              <Typography variant="h4" fontWeight={800} color="#fff" sx={{ mb: 2 }}>
+              <Typography variant="h4" fontWeight={800} className="salary-management-table-title" sx={{ mb: 2 }}>
                 Current Salary Records
               </Typography>
 
-              <TableContainer
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  border: `1px solid ${borderColor}`,
-                  backgroundColor: cardBg,
-                }}
-              >
+              <TableContainer className="salary-management-table-container" sx={{ backgroundColor: "#24293b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, boxShadow: "none" }}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={tableHeadCellSx}>Employee</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Email</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Department</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Base Salary</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Effective Date</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Updated By</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Employee</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Email</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Department</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Base Salary</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Effective Date</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Updated By</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {employees.map((employee) => (
                       <TableRow key={employee.employee_id} hover>
-                        <TableCell sx={tableBodyCellSx}>{employee.name}</TableCell>
-                        <TableCell sx={tableBodyCellSx}>{employee.email}</TableCell>
-                        <TableCell sx={tableBodyCellSx}>{employee.department || "-"}</TableCell>
-                        <TableCell sx={tableBodyCellSx}>
+                        <TableCell className="salary-management-table-body-cell">{employee.name}</TableCell>
+                        <TableCell className="salary-management-table-body-cell">{employee.email}</TableCell>
+                        <TableCell className="salary-management-table-body-cell">{employee.department || "-"}</TableCell>
+                        <TableCell className="salary-management-table-body-cell">
                           {employee.base_salary !== null
                             ? currency(employee.base_salary)
                             : "Not set"}
                         </TableCell>
-                        <TableCell sx={tableBodyCellSx}>{employee.effective_date || "-"}</TableCell>
-                        <TableCell sx={tableBodyCellSx}>{employee.updated_by || "-"}</TableCell>
+                        <TableCell className="salary-management-table-body-cell">{employee.effective_date || "-"}</TableCell>
+                        <TableCell className="salary-management-table-body-cell">{employee.updated_by || "-"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -650,71 +471,56 @@ function SalaryManagementPage() {
               </TableContainer>
             </Box>
 
-            <Divider sx={{ borderColor: borderColor }} />
+            <Divider className="salary-management-divider" />
 
             <Box>
-              <Typography variant="h4" fontWeight={800} color="#fff" sx={{ mb: 2 }}>
+              <Typography variant="h4" fontWeight={800} className="salary-management-table-title" sx={{ mb: 2 }}>
                 Payroll History
               </Typography>
 
-              <TableContainer
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  border: `1px solid ${borderColor}`,
-                  backgroundColor: cardBg,
-                }}
-              >
+              <TableContainer className="salary-management-table-container" sx={{ backgroundColor: "#24293b", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 2, boxShadow: "none" }}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={tableHeadCellSx}>Employee</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Month</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Base Salary</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Deductions</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Net Pay</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Status</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Issued By</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Issued At</TableCell>
-                      <TableCell sx={tableHeadCellSx}>Remarks</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Employee</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Month</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Base Salary</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Deductions</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Net Pay</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Status</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Issued By</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Issued At</TableCell>
+                      <TableCell className="salary-management-table-head-cell">Remarks</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {payrolls.length === 0 ? (
                       <TableRow>
-                        <TableCell sx={tableBodyCellSx} colSpan={9}>
+                        <TableCell className="salary-management-table-body-cell" colSpan={9}>
                           No payroll records yet.
                         </TableCell>
                       </TableRow>
                     ) : (
                       payrolls.map((payroll) => (
                         <TableRow key={payroll.id} hover>
-                          <TableCell sx={tableBodyCellSx}>{payroll.employee_name}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{payroll.payroll_month}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{currency(payroll.base_salary)}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>
+                          <TableCell className="salary-management-table-body-cell">{payroll.employee_name}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">{payroll.payroll_month}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">{currency(payroll.base_salary)}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">
                             {currency(payroll.deduction_amount)}
                           </TableCell>
-                          <TableCell sx={tableBodyCellSx}>{currency(payroll.net_pay)}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>
+                          <TableCell className="salary-management-table-body-cell">{currency(payroll.net_pay)}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">
                             <Chip
                               size="small"
                               label={payroll.status}
-                              sx={{
-                                color: "#fff",
-                                borderColor:
-                                  payroll.status === "issued" ? "#5b93ff" : "#f0ad4e",
-                                backgroundColor:
-                                  payroll.status === "issued"
-                                    ? "rgba(91,147,255,0.12)"
-                                    : "rgba(240,173,78,0.12)",
-                              }}
+                              className={`salary-management-chip ${payroll.status === "issued" ? "salary-management-chip-issued" : "salary-management-chip-correction"}`}
                               variant="outlined"
                             />
                           </TableCell>
-                          <TableCell sx={tableBodyCellSx}>{payroll.issued_by_name || "-"}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{payroll.issued_at}</TableCell>
-                          <TableCell sx={tableBodyCellSx}>{payroll.remarks || "-"}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">{payroll.issued_by_name || "-"}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">{payroll.issued_at}</TableCell>
+                          <TableCell className="salary-management-table-body-cell">{payroll.remarks || "-"}</TableCell>
                         </TableRow>
                       ))
                     )}
@@ -724,17 +530,7 @@ function SalaryManagementPage() {
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button
-                variant="contained"
-                onClick={() => navigate("/dashboard")}
-                sx={{
-                  borderRadius: 1.5,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  bgcolor: "#7a849e",
-                  "&:hover": { bgcolor: "#6b758d" },
-                }}
-              >
+              <Button variant="contained" onClick={() => navigate("/dashboard")} className="salary-management-back-btn" sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 700, backgroundColor: "#7a849e", "&:hover": { backgroundColor: "#6b758d" } }}>
                 Back to Dashboard
               </Button>
             </Box>
