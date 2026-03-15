@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS employees (
   must_change_password TINYINT(1) DEFAULT 1,
   reset_token TEXT NULL,
   reset_token_expiry DATETIME NULL,
+  failed_login_attempts INT NOT NULL DEFAULT 0,
+  locked_until DATETIME NULL,
   FOREIGN KEY (manager_id) REFERENCES employees(id)
 );
 
@@ -66,4 +68,14 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   details TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (actor_employee_id) REFERENCES employees(id)
+);
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  token VARCHAR(512) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  revoked TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 );
