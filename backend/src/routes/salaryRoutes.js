@@ -197,8 +197,11 @@ router.post("/salary-records", authMiddleware, roleMiddleware("admin"), async (r
 
 router.get("/payroll-records", authMiddleware, async (req, res) => {
     try {
+        const scope = req.query.scope === "all" ? "all" : "own";
+        const canViewAll = req.user.role === "admin" && scope === "all";
+
         let rows;
-        if (req.user.role === "admin") {
+        if (canViewAll) {
             rows = await dbAll(
                 `SELECT pr.*, e.name AS employee_name, e.email AS employee_email,
                         issuer.name AS issued_by_name
@@ -220,7 +223,8 @@ router.get("/payroll-records", authMiddleware, async (req, res) => {
                 [req.user.id]
             );
             await addAuditLog(req.user.id, "VIEW_OWN_PAYROLL_HISTORY", "payroll_record", null, {
-                employeeId: req.user.id
+                employeeId: req.user.id,
+                scope: "own"
             });
         }
 

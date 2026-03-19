@@ -41,7 +41,7 @@ function MySalaryPage() {
       try {
         const [salaryRes, historyRes] = await Promise.all([
           api.get("/salary/my-salary"),
-          api.get("/salary/payroll-records"),
+          api.get("/salary/payroll-records?scope=own"),
         ]);
         setSalary(salaryRes.data);
         setHistory(historyRes.data);

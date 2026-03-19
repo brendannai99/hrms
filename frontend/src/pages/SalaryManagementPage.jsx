@@ -78,7 +78,7 @@ function SalaryManagementPage() {
       const [meRes, salaryRes, payrollRes, auditRes] = await Promise.all([
         api.get("/auth/me"),
         api.get("/salary/salary-records"),
-        api.get("/salary/payroll-records"),
+        api.get("/salary/payroll-records?scope=all"),
         api.get("/salary/audit-logs"),
       ]);
 
