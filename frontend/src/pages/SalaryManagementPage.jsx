@@ -755,11 +755,36 @@ function SalaryManagementPage() {
                     }))
                   }
                   rowsPerPageOptions={[5, 10, 25, 50]}
+                  sx={{
+                    color: "#fff",
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    ".MuiTablePagination-selectLabel": {
+                      color: "#fff",
+                    },
+                    ".MuiTablePagination-displayedRows": {
+                      color: "#fff",
+                    },
+                    ".MuiInputBase-root": {
+                      color: "#fff",
+                    },
+                    ".MuiSelect-select": {
+                      color: "#fff",
+                    },
+                    ".MuiSvgIcon-root": {
+                      color: "#fff",
+                    },
+                    ".MuiIconButton-root": {
+                      color: "#fff",
+                    },
+                    ".MuiIconButton-root.Mui-disabled": {
+                      color: "rgba(255,255,255,0.35)",
+                    },
+                  }}
                 />
               </TableContainer>
             </Box>
 
-            
+
             <Dialog
               open={correctionOpen}
               onClose={closeCorrectionDialog}
@@ -821,7 +846,7 @@ function SalaryManagementPage() {
               </DialogActions>
             </Dialog>
 
-            
+
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button variant="contained" onClick={() => navigate("/dashboard")} className="salary-management-back-btn" sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 700, backgroundColor: "#7a849e", "&:hover": { backgroundColor: "#6b758d" } }}>
                 Back to Dashboard
