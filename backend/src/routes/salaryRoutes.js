@@ -356,7 +356,7 @@ router.post("/payroll-records/:id/corrections", authMiddleware, roleMiddleware("
     const { amount_delta, remarks } = req.body;
 
     const parsedDelta = Number(amount_delta);
-    if (Number.isNaN(parsedDelta) || parsedDelta === 0 || !remarks) {
+    if (Number.isNaN(parsedDelta) || parsedDelta === 0 || !String(remarks || "").trim()) {
         return res.status(400).json({ error: "amount_delta and remarks are required. amount_delta cannot be 0" });
     }
 
@@ -366,52 +366,80 @@ router.post("/payroll-records/:id/corrections", authMiddleware, roleMiddleware("
             return res.status(404).json({ error: "Original payroll record not found" });
         }
 
-        const existingCorrection = await dbGet(
-            `SELECT id FROM payroll_records WHERE correction_of_payroll_id = ? AND status = 'correction'`,
+        if (String(original.status).toLowerCase() !== "issued") {
+            return res.status(400).json({ error: "Only issued payroll records can be corrected" });
+        }
+
+        const existingCorrections = await dbAll(
+            `SELECT id, status
+             FROM payroll_records
+             WHERE correction_of_payroll_id = ?
+               AND status LIKE 'correction%'
+             ORDER BY issued_at ASC, id ASC`,
             [payrollId]
         );
 
-        if (existingCorrection) {
-            return res.status(400).json({ error: "A correction record already exists for this payroll" });
-        }
+        // Allow multiple corrections without schema changes by versioning status values:
+        // issued + correction + correction-2 + correction-3 ...
+        const nextVersion = existingCorrections.length + 1;
+        const correctionStatus = nextVersion === 1 ? "correction" : `correction-${nextVersion}`;
 
         const correctedNet = Number(original.net_pay) + parsedDelta;
         if (correctedNet < 0) {
             return res.status(400).json({ error: "Corrected net pay cannot be negative" });
         }
 
+        // Keep the breakdown consistent: net_pay = base_salary - deduction_amount
+        const baseSalary = Number(original.base_salary);
+        const newDeduction = baseSalary - correctedNet;
+
+        if (Number.isNaN(baseSalary) || baseSalary < 0) {
+            return res.status(400).json({ error: "Original payroll base salary is invalid" });
+        }
+
+        if (newDeduction < 0) {
+            return res.status(400).json({ error: "Corrected net pay cannot exceed base salary" });
+        }
+
         const result = await dbRun(
             `INSERT INTO payroll_records (
                 employee_id, salary_record_id, payroll_month, base_salary,
                 deduction_amount, net_pay, issued_by, status, correction_of_payroll_id, remarks
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'correction', ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 original.employee_id,
                 original.salary_record_id,
                 original.payroll_month,
                 original.base_salary,
-                Math.max(0, Number(original.deduction_amount) - parsedDelta),
+                newDeduction,
                 correctedNet,
                 req.user.id,
+                correctionStatus,
                 payrollId,
-                remarks
+                String(remarks).trim()
             ]
         );
 
         await addAuditLog(req.user.id, "ISSUE_PAYROLL_CORRECTION", "payroll_record", result.lastID, {
             originalPayrollId: payrollId,
-            amountDelta: parsedDelta
+            amountDelta: parsedDelta,
+            correctionStatus
         });
 
-        res.status(201).json({ message: "Correction record created successfully", id: result.lastID });
+        res.status(201).json({
+            message: "Correction record created successfully",
+            id: result.lastID,
+            status: correctionStatus
+        });
     } catch (error) {
         if (String(error.message || "").includes("Duplicate entry")) {
-            return res.status(400).json({ error: "Cannot create another issued payroll row for the same employee and month" });
+            return res.status(400).json({ error: "Cannot create another payroll row for the same employee and month with the same status" });
         }
 
         res.status(500).json({ error: "Failed to create correction record" });
     }
 });
+
 
 router.get("/audit-logs", authMiddleware, roleMiddleware("admin"), async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1);

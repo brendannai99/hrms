@@ -11,6 +11,10 @@ import {
   Chip,
   Container,
   Divider,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   InputLabel,
@@ -107,6 +111,12 @@ function SalaryManagementPage() {
     deduction_amount: "0",
     remarks: "",
   });
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [correctionTarget, setCorrectionTarget] = useState(null);
+  const [correctionForm, setCorrectionForm] = useState({ amount_delta: "", remarks: "" });
+  const [correctionError, setCorrectionError] = useState("");
+
+
   const [bulkMonth, setBulkMonth] = useState(currentMonthValue());
   const [auditFilters, setAuditFilters] = useState({
     search: "",
@@ -183,10 +193,20 @@ function SalaryManagementPage() {
     () => ({
       employeesWithSalary: employees.filter((item) => item.salary_record_id).length,
       payrollsIssued: payrolls.filter((item) => item.status === "issued").length,
-      corrections: payrolls.filter((item) => item.status === "correction").length,
+      corrections: payrolls.filter((item) => String(item.status || "").startsWith("correction")).length,
     }),
     [employees, payrolls]
   );
+
+  const correctedOriginalIds = useMemo(() => {
+    const ids = new Set();
+    payrolls.forEach((item) => {
+      if (String(item.status || "").startsWith("correction") && item.correction_of_payroll_id) {
+        ids.add(item.correction_of_payroll_id);
+      }
+    });
+    return ids;
+  }, [payrolls]);
 
   const onSalaryChange = async (e) => {
     const nextForm = { ...salaryForm, [e.target.name]: e.target.value };
@@ -268,6 +288,51 @@ function SalaryManagementPage() {
       setError(err.response?.data?.error || "Failed to issue payroll");
     }
   };
+  const openCorrectionDialog = (payroll) => {
+    setCorrectionTarget(payroll);
+    setCorrectionForm({ amount_delta: "", remarks: "" });
+    setCorrectionError("");
+    setCorrectionOpen(true);
+  };
+
+  const closeCorrectionDialog = () => {
+    setCorrectionOpen(false);
+    setCorrectionTarget(null);
+    setCorrectionForm({ amount_delta: "", remarks: "" });
+    setCorrectionError("");
+  };
+
+  const submitCorrection = async () => {
+    if (!correctionTarget) return;
+    setMessage("");
+    setError("");
+    setCorrectionError("");
+
+    const delta = Number(correctionForm.amount_delta);
+    const remarks = String(correctionForm.remarks || "").trim();
+
+    if (Number.isNaN(delta) || delta === 0) {
+      return setCorrectionError("Amount delta must be a non-zero number (positive or negative).");
+    }
+    if (!remarks) {
+      return setCorrectionError("Remarks are required for auditability.");
+    }
+
+    try {
+      await api.post(`/salary/payroll-records/${correctionTarget.id}/corrections`, {
+        amount_delta: delta,
+        remarks,
+      });
+
+      setMessage("Correction record issued successfully.");
+      closeCorrectionDialog();
+      await refreshPayrollRecords();
+    } catch (err) {
+      setCorrectionError(err.response?.data?.error || "Failed to issue correction record");
+    }
+  };
+
+
 
   const handleBulkIssue = async () => {
     setMessage("");
@@ -569,12 +634,15 @@ function SalaryManagementPage() {
                       <TableCell className="salary-management-table-head-cell">Issued By</TableCell>
                       <TableCell className="salary-management-table-head-cell">Issued At</TableCell>
                       <TableCell className="salary-management-table-head-cell">Remarks</TableCell>
+                      {user?.role === "admin" && (
+                        <TableCell className="salary-management-table-head-cell">Actions</TableCell>
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {payrolls.length === 0 ? (
                       <TableRow>
-                        <TableCell className="salary-management-table-body-cell" colSpan={9}>No payroll records yet.</TableCell>
+                        <TableCell className="salary-management-table-body-cell" colSpan={user?.role === "admin" ? 10 : 9}>No payroll records yet.</TableCell>
                       </TableRow>
                     ) : (
                       payrolls.map((payroll) => (
@@ -585,11 +653,24 @@ function SalaryManagementPage() {
                           <TableCell className="salary-management-table-body-cell">{currency(payroll.deduction_amount)}</TableCell>
                           <TableCell className="salary-management-table-body-cell">{currency(payroll.net_pay)}</TableCell>
                           <TableCell className="salary-management-table-body-cell">
-                            <Chip size="small" label={payroll.status} className={`salary-management-chip ${payroll.status === "issued" ? "salary-management-chip-issued" : "salary-management-chip-correction"}`} variant="outlined" />
+                            <Chip size="small" label={payroll.status} className={`salary-management-chip ${String(payroll.status || "").toLowerCase() === "issued" ? "salary-management-chip-issued" : "salary-management-chip-correction"}`} variant="outlined" />
                           </TableCell>
                           <TableCell className="salary-management-table-body-cell">{payroll.issued_by_name || "-"}</TableCell>
                           <TableCell className="salary-management-table-body-cell">{payroll.issued_at}</TableCell>
                           <TableCell className="salary-management-table-body-cell">{payroll.remarks || "-"}</TableCell>
+                          {user?.role === "admin" && (
+                            <TableCell className="salary-management-table-body-cell">
+                              {String(payroll.status || "").toLowerCase() === "issued" && !correctedOriginalIds.has(payroll.id) ? (
+                                <Button size="small" variant="outlined" onClick={() => openCorrectionDialog(payroll)}>
+                                  Issue correction
+                                </Button>
+                              ) : (
+                                <Typography variant="caption" className="salary-management-muted-text">
+                                  {String(payroll.status || "").startsWith("correction") ? "Correction row" : correctedOriginalIds.has(payroll.id) ? "Corrected" : "-"}
+                                </Typography>
+                              )}
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))
                     )}
@@ -678,6 +759,69 @@ function SalaryManagementPage() {
               </TableContainer>
             </Box>
 
+            
+            <Dialog
+              open={correctionOpen}
+              onClose={closeCorrectionDialog}
+              maxWidth="sm"
+              fullWidth
+              PaperProps={{
+                className: "salary-management-dialog-paper",
+              }}
+            >
+              <DialogTitle className="salary-management-dialog-title">
+                Issue payroll correction
+              </DialogTitle>
+
+              <DialogContent className="salary-management-dialog-content">
+                {correctionError && (
+                  <Alert severity="error" sx={{ mt: 1, mb: 2, borderRadius: 2 }}>
+                    {correctionError}
+                  </Alert>
+                )}
+
+                <Typography variant="body2" className="salary-management-muted-text" sx={{ mb: 2 }}>
+                  Target payroll ID: <strong>{correctionTarget?.id}</strong> • Employee:{" "}
+                  <strong>{correctionTarget?.employee_name}</strong> • Month:{" "}
+                  <strong>{correctionTarget?.payroll_month}</strong>
+                </Typography>
+
+                <Stack spacing={2}>
+                  <TextField
+                    label="Amount delta (SGD)"
+                    value={correctionForm.amount_delta}
+                    onChange={(e) =>
+                      setCorrectionForm((prev) => ({ ...prev, amount_delta: e.target.value }))
+                    }
+                    helperText="Positive = increase net pay, Negative = decrease net pay"
+                    className="salary-management-input"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Remarks"
+                    value={correctionForm.remarks}
+                    onChange={(e) =>
+                      setCorrectionForm((prev) => ({ ...prev, remarks: e.target.value }))
+                    }
+                    className="salary-management-input"
+                    multiline
+                    minRows={3}
+                    fullWidth
+                  />
+                </Stack>
+              </DialogContent>
+
+              <DialogActions className="salary-management-dialog-actions">
+                <Button onClick={closeCorrectionDialog} variant="outlined">
+                  Cancel
+                </Button>
+                <Button onClick={submitCorrection} variant="contained">
+                  Issue correction
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button variant="contained" onClick={() => navigate("/dashboard")} className="salary-management-back-btn" sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 700, backgroundColor: "#7a849e", "&:hover": { backgroundColor: "#6b758d" } }}>
                 Back to Dashboard

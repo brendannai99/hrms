@@ -247,3 +247,29 @@ body {
   border-color: #f0ad4e !important;
   background-color: rgba(240,173,78,0.12) !important;
 }
+
+.salary-management-dialog-paper {
+  background-color: #24293b !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35) !important;
+}
+
+.salary-management-dialog-title {
+  color: #fff !important;
+  font-weight: 700 !important;
+  padding-bottom: 8px !important;
+}
+
+.salary-management-dialog-content {
+  color: #fff !important;
+}
+
+.salary-management-dialog-actions {
+  padding: 16px 24px 20px !important;
+}
+
+.salary-management-dialog-content .MuiFormHelperText-root {
+  color: rgba(255,255,255,0.68) !important;
+}
