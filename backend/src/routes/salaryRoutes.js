@@ -414,15 +414,80 @@ router.post("/payroll-records/:id/corrections", authMiddleware, roleMiddleware("
 });
 
 router.get("/audit-logs", authMiddleware, roleMiddleware("admin"), async (req, res) => {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const offset = (page - 1) * limit;
+    const action = (req.query.action || "").trim();
+    const actor = (req.query.actor || "").trim();
+    const targetType = (req.query.target_type || "").trim();
+    const search = (req.query.search || "").trim();
+
+    const whereClauses = [];
+    const params = [];
+
+    if (action) {
+        whereClauses.push("al.action = ?");
+        params.push(action);
+    }
+
+    if (targetType) {
+        whereClauses.push("al.target_type = ?");
+        params.push(targetType);
+    }
+
+    if (actor) {
+        whereClauses.push("COALESCE(actor.name, 'System') LIKE ?");
+        params.push(`%${actor}%`);
+    }
+
+    if (search) {
+        const wildcard = `%${search}%`;
+        whereClauses.push(`(
+            al.action LIKE ?
+            OR al.target_type LIKE ?
+            OR CAST(al.target_id AS CHAR) LIKE ?
+            OR COALESCE(actor.name, 'System') LIKE ?
+            OR COALESCE(al.details, '') LIKE ?
+        )`);
+        params.push(wildcard, wildcard, wildcard, wildcard, wildcard);
+    }
+
+    const whereSql = whereClauses.length ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
     try {
         const rows = await dbAll(
             `SELECT al.*, actor.name AS actor_name
              FROM audit_logs al
              LEFT JOIN employees actor ON actor.id = al.actor_employee_id
+             ${whereSql}
              ORDER BY al.created_at DESC, al.id DESC
-             LIMIT 200`
+             LIMIT ? OFFSET ?`,
+            [...params, limit, offset]
         );
-        res.json(rows);
+
+        const countRow = await dbGet(
+            `SELECT COUNT(*) AS total
+             FROM audit_logs al
+             LEFT JOIN employees actor ON actor.id = al.actor_employee_id
+             ${whereSql}`,
+            params
+        );
+
+        res.json({
+            data: rows,
+            pagination: {
+                page,
+                limit,
+                total: Number(countRow?.total || 0),
+                totalPages: Math.ceil(Number(countRow?.total || 0) / limit) || 0
+            },
+            filters: {
+                action,
+                actor,
+                target_type: targetType,
+                search
+            }
+        });
     } catch {
         res.status(500).json({ error: "Failed to fetch audit logs" });
     }
