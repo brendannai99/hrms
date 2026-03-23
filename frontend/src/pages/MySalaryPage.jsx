@@ -105,10 +105,6 @@ function MySalaryPage() {
               </Grid>
             </Grid>
 
-            <Alert severity="info" className="my-salary-info-alert">
-              Employees can only view their own salary and payment history.
-            </Alert>
-
             <Box>
               <Typography variant="h5" fontWeight={800} className="my-salary-section-title" sx={{ mb: 2 }}>
                 Payment History
