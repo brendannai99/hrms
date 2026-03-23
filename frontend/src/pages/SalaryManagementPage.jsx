@@ -522,10 +522,6 @@ function SalaryManagementPage() {
                   </Button>
                 </Box>
               </Box>
-
-              <Typography className="salary-management-muted-text" sx={{ mt: 1.5 }}>
-                Each salary update creates a new record. Existing salary rows are not overwritten.
-              </Typography>
             </Box>
 
             <Divider className="salary-management-divider" />
@@ -575,10 +571,6 @@ function SalaryManagementPage() {
                 <TextField type="month" value={bulkMonth} onChange={(e) => setBulkMonth(e.target.value)} className="salary-management-input salary-management-bulk-month" />
                 <Button variant="contained" type="button" onClick={handleBulkIssue} className="salary-management-bulk-btn" sx={{ width: { xs: "100%", sm: 160 } }}>Issue Bulk Payroll</Button>
               </Stack>
-
-              <Typography className="salary-management-muted-text" sx={{ mt: 1.5 }}>
-                The system prevents issuing salary twice for the same employee and month.
-              </Typography>
             </Box>
 
             <Divider className="salary-management-divider" />
