@@ -79,3 +79,42 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS public_holidays (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  holiday_date DATE NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS leave_balances (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  year INT NOT NULL,
+  annual_quota DECIMAL(4,1) NOT NULL DEFAULT 14.0,
+  annual_used DECIMAL(4,1) NOT NULL DEFAULT 0.0,
+  annual_remaining DECIMAL(4,1) NOT NULL DEFAULT 14.0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_employee_year_balance (employee_id, year),
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS leave_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  leave_type ENUM('annual', 'sick') NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  half_day ENUM('none', 'AM', 'PM') NOT NULL DEFAULT 'none',
+  days_requested DECIMAL(4,1) NOT NULL,
+  reason TEXT NULL,
+  status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  approved_by INT NULL,
+  approved_at DATETIME NULL,
+  rejection_reason TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+  FOREIGN KEY (approved_by) REFERENCES employees(id) ON DELETE SET NULL
+);
