@@ -10,6 +10,10 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SalaryManagementPage from "./pages/SalaryManagementPage";
 import MySalaryPage from "./pages/MySalaryPage";
 import FirstTimePasswordPage from "./pages/FirstTimePasswordPage";
+import ApplyLeavePage from "./pages/ApplyLeavePage";
+import MyLeavePage from "./pages/MyLeavePage";
+import LeaveApprovalPage from "./pages/LeaveApprovalPage";
+import PublicHolidaysPage from "./pages/PublicHolidaysPage";
 
 function App() {
   return (
@@ -26,6 +30,11 @@ function App() {
         <Route path="/salary-management" element={<SalaryManagementPage />} />
         <Route path="/my-salary" element={<MySalaryPage />} />
         <Route path="/first-time-password" element={<FirstTimePasswordPage />} />
+
+        <Route path="/apply-leave" element={<ApplyLeavePage />} />
+        <Route path="/my-leave" element={<MyLeavePage />} />
+        <Route path="/leave-approval" element={<LeaveApprovalPage />} />
+        <Route path="/public-holidays" element={<PublicHolidaysPage />} />
       </Routes>
     </BrowserRouter>
   );
