@@ -77,6 +77,9 @@ function DashboardPage() {
                     <button className="btn btn-primary" onClick={() => navigate("/my-leave")}>
                         My Leave History
                     </button>
+                    <button className="btn btn-primary" onClick={() => navigate("/public-holidays")}>
+                        Public Holidays
+                    </button>
 
                     {(user.role === "manager" || user.role === "admin") && (
                         <button className="btn btn-primary" onClick={() => navigate("/leave-approval")}>
@@ -95,9 +98,7 @@ function DashboardPage() {
                             <button className="btn btn-primary" onClick={() => navigate("/salary-management")}>
                                 Salary Management
                             </button>
-                            <button className="btn btn-primary" onClick={() => navigate("/public-holidays")}>
-                                Public Holidays
-                            </button>
+                            
                         </>
                     )}
 

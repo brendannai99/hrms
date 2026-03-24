@@ -30,8 +30,8 @@ function LeaveApprovalPage() {
     };
 
     return (
-        <div className="page-container">
-            <div className="card-narrow">
+        <div className="page-container leave-page">
+            <div className="card-narrow leave-card">
                 <h1 className="page-title">Leave Approval</h1>
 
                 {error && <p className="message-error">{error}</p>}
@@ -44,7 +44,7 @@ function LeaveApprovalPage() {
                                 <th>Type</th>
                                 <th>Start</th>
                                 <th>End</th>
-                                <th>Half Day</th>
+                                <th>Leave Duration</th>
                                 <th>Days</th>
                                 <th>Reason</th>
                                 <th>Action</th>
@@ -60,13 +60,21 @@ function LeaveApprovalPage() {
                                     <tr key={row.id}>
                                         <td>{row.employee_name}</td>
                                         <td>{row.leave_type === "annual" ? "Annual Leave" : "Sick Leave"}</td>
-                                        <td>{row.start_date?.slice(0, 10)}</td>
-                                        <td>{row.end_date?.slice(0, 10)}</td>
-                                        <td>{row.half_day}</td>
+                                        <td>{row.start_date}</td>
+                                        <td>{row.end_date}</td>
+
+                                        <td>
+                                            {row.half_day === "none"
+                                                ? "Full Day"
+                                                : row.half_day === "AM"
+                                                    ? "AM Leave"
+                                                    : "PM Leave"}
+                                        </td>
+
                                         <td>{row.days_requested}</td>
                                         <td>{row.reason || "-"}</td>
                                         <td>
-                                            <div className="dashboard-actions">
+                                            <div className="leave-actions">
                                                 <button
                                                     className="btn btn-primary"
                                                     onClick={() => handleAction(row.id, "approved")}
@@ -88,7 +96,7 @@ function LeaveApprovalPage() {
                     </table>
                 </div>
 
-                <div className="dashboard-actions">
+                <div className="leave-actions">
                     <button className="btn btn-secondary" onClick={() => navigate("/dashboard")}>
                         Back
                     </button>

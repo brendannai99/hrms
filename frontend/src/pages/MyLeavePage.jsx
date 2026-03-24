@@ -25,18 +25,33 @@ function MyLeavePage() {
         fetchData();
     }, []);
 
+    const getStatusClass = (status) => {
+        if (status === "approved") return "status-badge status-approved";
+        if (status === "rejected") return "status-badge status-rejected";
+        return "status-badge status-pending";
+    };
+
     return (
-        <div className="page-container">
-            <div className="card-narrow">
+        <div className="page-container leave-page">
+            <div className="card-narrow leave-card">
                 <h1 className="page-title">My Leave History</h1>
 
                 {error && <p className="message-error">{error}</p>}
 
                 {balance && (
-                    <div className="info-list">
-                        <div>Annual Quota: {balance.annual_quota}</div>
-                        <div>Used: {balance.annual_used}</div>
-                        <div>Remaining: {balance.annual_remaining}</div>
+                    <div className="balance-box">
+                        <div className="balance-item">
+                            <div className="balance-label">Annual Quota</div>
+                            <div className="balance-value">{balance.annual_quota}</div>
+                        </div>
+                        <div className="balance-item">
+                            <div className="balance-label">Used</div>
+                            <div className="balance-value">{balance.annual_used}</div>
+                        </div>
+                        <div className="balance-item">
+                            <div className="balance-label">Remaining</div>
+                            <div className="balance-value">{balance.annual_remaining}</div>
+                        </div>
                     </div>
                 )}
 
@@ -47,7 +62,7 @@ function MyLeavePage() {
                                 <th>Type</th>
                                 <th>Start</th>
                                 <th>End</th>
-                                <th>Half Day</th>
+                                <th>Leave Duration</th>
                                 <th>Days</th>
                                 <th>Status</th>
                                 <th>Reason</th>
@@ -62,11 +77,31 @@ function MyLeavePage() {
                                 leaveRows.map((row) => (
                                     <tr key={row.id}>
                                         <td>{row.leave_type === "annual" ? "Annual Leave" : "Sick Leave"}</td>
-                                        <td>{row.start_date?.slice(0, 10)}</td>
-                                        <td>{row.end_date?.slice(0, 10)}</td>
-                                        <td>{row.half_day}</td>
+                                        <td>{row.start_date}</td>
+                                        <td>{row.end_date}</td>
+
+                                        <td>
+                                            {row.half_day === "none"
+                                                ? "Full Day"
+                                                : row.half_day === "AM"
+                                                    ? "AM Leave"
+                                                    : "PM Leave"}
+                                        </td>
+
                                         <td>{row.days_requested}</td>
-                                        <td>{row.status}</td>
+                                        <td>
+                                            <span
+                                                className={
+                                                    row.status === "approved"
+                                                        ? "status-badge status-approved"
+                                                        : row.status === "rejected"
+                                                            ? "status-badge status-rejected"
+                                                            : "status-badge status-pending"
+                                                }
+                                            >
+                                                {row.status}
+                                            </span>
+                                        </td>
                                         <td>{row.reason || "-"}</td>
                                     </tr>
                                 ))
@@ -75,7 +110,7 @@ function MyLeavePage() {
                     </table>
                 </div>
 
-                <div className="dashboard-actions">
+                <div className="leave-actions">
                     <button className="btn btn-secondary" onClick={() => navigate("/dashboard")}>
                         Back
                     </button>

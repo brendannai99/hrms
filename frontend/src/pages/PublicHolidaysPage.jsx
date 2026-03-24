@@ -6,7 +6,25 @@ function PublicHolidaysPage() {
     const [rows, setRows] = useState([]);
     const [form, setForm] = useState({ holiday_date: "", name: "" });
     const [error, setError] = useState("");
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [holidayRes, userRes] = await Promise.all([
+                    api.get("/leave/holidays"),
+                    api.get("/auth/me")
+                ]);
+                setRows(holidayRes.data);
+                setUser(userRes.data);
+            } catch {
+                setError("Failed to load holidays");
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const fetchHolidays = async () => {
         try {
@@ -16,10 +34,6 @@ function PublicHolidaysPage() {
             setError("Failed to load holidays");
         }
     };
-
-    useEffect(() => {
-        fetchHolidays();
-    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -43,33 +57,43 @@ function PublicHolidaysPage() {
     };
 
     return (
-        <div className="page-container">
-            <div className="card-narrow">
-                <h1 className="page-title">Public Holidays</h1>
+        <div className="page-container leave-page">
+            <div className="card-narrow leave-card">
+                <h1 className="page-title">Company Public Holidays</h1>
 
                 {error && <p className="message-error">{error}</p>}
 
-                <form onSubmit={handleSubmit} className="form-stack">
-                    <label className="form-label">Holiday Date</label>
-                    <input
-                        className="input-field"
-                        type="date"
-                        value={form.holiday_date}
-                        onChange={(e) => setForm({ ...form, holiday_date: e.target.value })}
-                        required
-                    />
+                {user?.role === "admin" && (
+                    <form onSubmit={handleSubmit} className="form-stack">
+                        <label className="form-label">Holiday Date</label>
+                        <input
+                            className="input-field"
+                            type="date"
+                            value={form.holiday_date}
+                            onChange={(e) =>
+                                setForm({ ...form, holiday_date: e.target.value })
+                            }
+                            required
+                        />
 
-                    <label className="form-label">Holiday Name</label>
-                    <input
-                        className="input-field"
-                        type="text"
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        required
-                    />
+                        <label className="form-label">Holiday Name</label>
+                        <input
+                            className="input-field"
+                            type="text"
+                            value={form.name}
+                            onChange={(e) =>
+                                setForm({ ...form, name: e.target.value })
+                            }
+                            required
+                        />
 
-                    <button type="submit" className="btn btn-primary">Add Holiday</button>
-                </form>
+                        <div className="leave-actions">
+                            <button type="submit" className="btn btn-primary">
+                                Add Holiday
+                            </button>
+                        </div>
+                    </form>
+                )}
 
                 <div className="table-wrapper">
                     <table className="data-table">
@@ -77,24 +101,31 @@ function PublicHolidaysPage() {
                             <tr>
                                 <th>Date</th>
                                 <th>Name</th>
-                                <th>Action</th>
+                                {user?.role === "admin" && <th>Action</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {rows.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3">No holidays configured.</td>
+                                    <td colSpan={user?.role === "admin" ? "3" : "2"}>
+                                        No holidays configured.
+                                    </td>
                                 </tr>
                             ) : (
                                 rows.map((row) => (
                                     <tr key={row.id}>
                                         <td>{row.holiday_date?.slice(0, 10)}</td>
                                         <td>{row.name}</td>
-                                        <td>
-                                            <button className="btn btn-secondary" onClick={() => handleDelete(row.id)}>
-                                                Delete
-                                            </button>
-                                        </td>
+                                        {user?.role === "admin" && (
+                                            <td>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    onClick={() => handleDelete(row.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))
                             )}
@@ -102,8 +133,11 @@ function PublicHolidaysPage() {
                     </table>
                 </div>
 
-                <div className="dashboard-actions">
-                    <button className="btn btn-secondary" onClick={() => navigate("/dashboard")}>
+                <div className="leave-actions">
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => navigate("/dashboard")}
+                    >
                         Back
                     </button>
                 </div>
