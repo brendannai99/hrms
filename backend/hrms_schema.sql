@@ -79,3 +79,36 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS reporting_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  manager_id INT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NULL,
+  FOREIGN KEY (employee_id) REFERENCES employees(id),
+  FOREIGN KEY (manager_id) REFERENCES employees(id)
+);
+
+CREATE TABLE IF NOT EXISTS review_periods (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  period_name VARCHAR(255) NOT NULL,
+  is_open TINYINT(1) DEFAULT 0,
+  created_by INT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES employees(id)
+);
+
+CREATE TABLE IF NOT EXISTS performance_ratings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  employee_id INT NOT NULL,
+  reviewer_id INT NOT NULL,
+  review_period_id INT NOT NULL,
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comments TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (employee_id) REFERENCES employees(id),
+  FOREIGN KEY (reviewer_id) REFERENCES employees(id),
+  FOREIGN KEY (review_period_id) REFERENCES review_periods(id),
+  UNIQUE KEY unique_review (employee_id, review_period_id) 
+);
