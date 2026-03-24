@@ -522,10 +522,6 @@ function SalaryManagementPage() {
                   </Button>
                 </Box>
               </Box>
-
-              <Typography className="salary-management-muted-text" sx={{ mt: 1.5 }}>
-                Each salary update creates a new record. Existing salary rows are not overwritten.
-              </Typography>
             </Box>
 
             <Divider className="salary-management-divider" />
@@ -575,10 +571,6 @@ function SalaryManagementPage() {
                 <TextField type="month" value={bulkMonth} onChange={(e) => setBulkMonth(e.target.value)} className="salary-management-input salary-management-bulk-month" />
                 <Button variant="contained" type="button" onClick={handleBulkIssue} className="salary-management-bulk-btn" sx={{ width: { xs: "100%", sm: 160 } }}>Issue Bulk Payroll</Button>
               </Stack>
-
-              <Typography className="salary-management-muted-text" sx={{ mt: 1.5 }}>
-                The system prevents issuing salary twice for the same employee and month.
-              </Typography>
             </Box>
 
             <Divider className="salary-management-divider" />
@@ -755,11 +747,36 @@ function SalaryManagementPage() {
                     }))
                   }
                   rowsPerPageOptions={[5, 10, 25, 50]}
+                  sx={{
+                    color: "#fff",
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    ".MuiTablePagination-selectLabel": {
+                      color: "#fff",
+                    },
+                    ".MuiTablePagination-displayedRows": {
+                      color: "#fff",
+                    },
+                    ".MuiInputBase-root": {
+                      color: "#fff",
+                    },
+                    ".MuiSelect-select": {
+                      color: "#fff",
+                    },
+                    ".MuiSvgIcon-root": {
+                      color: "#fff",
+                    },
+                    ".MuiIconButton-root": {
+                      color: "#fff",
+                    },
+                    ".MuiIconButton-root.Mui-disabled": {
+                      color: "rgba(255,255,255,0.35)",
+                    },
+                  }}
                 />
               </TableContainer>
             </Box>
 
-            
+
             <Dialog
               open={correctionOpen}
               onClose={closeCorrectionDialog}
@@ -821,7 +838,7 @@ function SalaryManagementPage() {
               </DialogActions>
             </Dialog>
 
-            
+
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button variant="contained" onClick={() => navigate("/dashboard")} className="salary-management-back-btn" sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 700, backgroundColor: "#7a849e", "&:hover": { backgroundColor: "#6b758d" } }}>
                 Back to Dashboard
