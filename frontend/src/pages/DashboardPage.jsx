@@ -71,6 +71,22 @@ function DashboardPage() {
                         My Salary
                     </button>
 
+                    <button className="btn btn-primary" onClick={() => navigate("/apply-leave")}>
+                        Apply Leave
+                    </button>
+                    <button className="btn btn-primary" onClick={() => navigate("/my-leave")}>
+                        My Leave History
+                    </button>
+                    <button className="btn btn-primary" onClick={() => navigate("/public-holidays")}>
+                        Public Holidays
+                    </button>
+
+                    {(user.role === "manager" || user.role === "admin") && (
+                        <button className="btn btn-primary" onClick={() => navigate("/leave-approval")}>
+                            Leave Approval
+                        </button>
+                    )}
+
                     {user.role === "admin" && (
                         <>
                             <button className="btn btn-primary" onClick={() => navigate("/create-employee")}>
@@ -82,6 +98,7 @@ function DashboardPage() {
                             <button className="btn btn-primary" onClick={() => navigate("/salary-management")}>
                                 Salary Management
                             </button>
+                            
                         </>
                     )}
 
