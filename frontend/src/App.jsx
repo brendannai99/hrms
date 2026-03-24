@@ -14,6 +14,9 @@ import ApplyLeavePage from "./pages/ApplyLeavePage";
 import MyLeavePage from "./pages/MyLeavePage";
 import LeaveApprovalPage from "./pages/LeaveApprovalPage";
 import PublicHolidaysPage from "./pages/PublicHolidaysPage";
+import OrgChartPage from "./pages/OrgChartPage";
+import PerformancePage from "./pages/PerformancePage";
+import MyTeamPage from "./pages/MyTeamPage";
 
 function App() {
   return (
@@ -35,6 +38,10 @@ function App() {
         <Route path="/my-leave" element={<MyLeavePage />} />
         <Route path="/leave-approval" element={<LeaveApprovalPage />} />
         <Route path="/public-holidays" element={<PublicHolidaysPage />} />
+
+        <Route path="/org-chart" element={<OrgChartPage />} />
+        <Route path="/performance" element={<PerformancePage />} />
+        <Route path="/my-team" element={<MyTeamPage />} />
       </Routes>
     </BrowserRouter>
   );

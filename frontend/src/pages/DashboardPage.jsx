@@ -71,6 +71,19 @@ function DashboardPage() {
                         My Salary
                     </button>
 
+                    {/* Part 3 - New buttons for org chart and performance reviews */}
+                    <button className="btn btn-primary" onClick={() => navigate("/org-chart")}>
+                        View Org Chart
+                    </button>
+                    <button className="btn btn-primary" onClick={() => navigate("/performance")}>
+                        Performance Reviews
+                    </button>
+                    {(user.role === "manager") && (
+                        <button className="btn btn-primary" onClick={() => navigate("/my-team")}>
+                            My Team
+                        </button>
+                    )}
+
                     <button className="btn btn-primary" onClick={() => navigate("/apply-leave")}>
                         Apply Leave
                     </button>

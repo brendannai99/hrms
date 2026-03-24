@@ -53,9 +53,19 @@ router.put("/reassign", authMiddleware, roleMiddleware("admin"), async (req, res
             error: "employee_id is required"
         });
     }
+    
+    // 1. Role Validation: Ensure the new manager isn't a base employee
+    if (new_manager_id) {
+        const managerCheck = await dbQuery("SELECT role FROM employees WHERE id = ?", [new_manager_id]);
+        if (managerCheck.length > 0 && managerCheck[0].role === "employee") {
+            return res.status(400).json({
+                error: "Hierarchy Error: A base 'employee' cannot be assigned as a manager."
+            });
+        }
+    }
 
     try {
-        // 1. Run Cycle Detection (Only if a new manager is actually being assigned)
+        // 2. Run Cycle Detection (Only if a new manager is actually being assigned)
         if (new_manager_id) {
             const hasCycle = await createsCycle(employee_id, new_manager_id);
             if (hasCycle) {
@@ -65,13 +75,13 @@ router.put("/reassign", authMiddleware, roleMiddleware("admin"), async (req, res
             }
         }
 
-        // 2. Close out the existing reporting history (Challenge #2)
+        // 3. Close out the existing reporting history
         await dbQuery(
             "UPDATE reporting_history SET end_date = CURRENT_DATE() WHERE employee_id = ? AND end_date IS NULL",
             [employee_id]
         );
 
-        // 3. Insert new history record
+        // 4. Insert new history record
         if (new_manager_id) {
             await dbQuery(
                 "INSERT INTO reporting_history (employee_id, manager_id, start_date) VALUES (?, ?, CURRENT_DATE())",
@@ -79,13 +89,13 @@ router.put("/reassign", authMiddleware, roleMiddleware("admin"), async (req, res
             );
         }
 
-        // 4. Update the actual employees table so the rest of the app sees the change
+        // 5. Update the actual employees table so the rest of the app sees the change
         await dbQuery(
             "UPDATE employees SET manager_id = ? WHERE id = ?",
             [new_manager_id || null, employee_id]
         );
 
-        // 5. Audit the action using your team's existing logger
+        // 6. Audit the action using your team's existing logger
         await addAuditLog(req.user.id, "MANAGER_REASSIGNED", "employee", employee_id, {
             new_manager_id: new_manager_id || null
         }).catch(() => {});

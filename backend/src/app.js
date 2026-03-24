@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const salaryRoutes = require("./routes/salaryRoutes");
 const orgRoutes = require("./routes/orgRoutes");
 const leaveRoutes = require("./routes/leaveRoutes");
+const performanceRoutes = require("./routes/performanceRoutes");
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use("/auth", authRoutes);
 app.use("/salary", salaryRoutes);
 app.use("/org", orgRoutes);
 app.use("/leave", leaveRoutes);
+app.use("/performance", performanceRoutes);
 
 module.exports = app;
