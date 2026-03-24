@@ -17,7 +17,7 @@ function MyLeavePage() {
                 ]);
                 setLeaveRows(leaveRes.data);
                 setBalance(balanceRes.data);
-            } catch (err) {
+            } catch {
                 setError("Failed to load leave records");
             }
         };
@@ -30,7 +30,7 @@ function MyLeavePage() {
             <div className="card-narrow">
                 <h1 className="page-title">My Leave History</h1>
 
-                {error && <p className="error-text">{error}</p>}
+                {error && <p className="message-error">{error}</p>}
 
                 {balance && (
                     <div className="info-list">
@@ -41,7 +41,7 @@ function MyLeavePage() {
                 )}
 
                 <div className="table-wrapper">
-                    <table>
+                    <table className="data-table">
                         <thead>
                             <tr>
                                 <th>Type</th>
@@ -61,7 +61,7 @@ function MyLeavePage() {
                             ) : (
                                 leaveRows.map((row) => (
                                     <tr key={row.id}>
-                                        <td>{row.leave_type}</td>
+                                        <td>{row.leave_type === "annual" ? "Annual Leave" : "Sick Leave"}</td>
                                         <td>{row.start_date?.slice(0, 10)}</td>
                                         <td>{row.end_date?.slice(0, 10)}</td>
                                         <td>{row.half_day}</td>

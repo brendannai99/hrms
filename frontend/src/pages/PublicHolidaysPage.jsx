@@ -47,19 +47,21 @@ function PublicHolidaysPage() {
             <div className="card-narrow">
                 <h1 className="page-title">Public Holidays</h1>
 
-                {error && <p className="error-text">{error}</p>}
+                {error && <p className="message-error">{error}</p>}
 
                 <form onSubmit={handleSubmit} className="form-stack">
-                    <label>Holiday Date</label>
+                    <label className="form-label">Holiday Date</label>
                     <input
+                        className="input-field"
                         type="date"
                         value={form.holiday_date}
                         onChange={(e) => setForm({ ...form, holiday_date: e.target.value })}
                         required
                     />
 
-                    <label>Holiday Name</label>
+                    <label className="form-label">Holiday Name</label>
                     <input
+                        className="input-field"
                         type="text"
                         value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -70,7 +72,7 @@ function PublicHolidaysPage() {
                 </form>
 
                 <div className="table-wrapper">
-                    <table>
+                    <table className="data-table">
                         <thead>
                             <tr>
                                 <th>Date</th>

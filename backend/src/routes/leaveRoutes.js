@@ -12,8 +12,11 @@ function dbQuery(sql, params = []) {
     });
 }
 
-function toDateOnlyString(date) {
-    return new Date(date).toISOString().slice(0, 10);
+function formatDateOnly(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 
 function startOfToday() {
@@ -44,7 +47,7 @@ function calculateLeaveDays(startDate, endDate, halfDay, holidaySet) {
     const dates = getDatesInRange(startDate, endDate);
 
     let workingDays = dates.filter((date) => {
-        const dateStr = toDateOnlyString(date);
+        const dateStr = formatDateOnly(date);
         return !isWeekend(date) && !holidaySet.has(dateStr);
     }).length;
 
@@ -53,7 +56,7 @@ function calculateLeaveDays(startDate, endDate, halfDay, holidaySet) {
     }
 
     if (halfDay !== "none") {
-        const sameDay = toDateOnlyString(startDate) === toDateOnlyString(endDate);
+        const sameDay = formatDateOnly(startDate) === formatDateOnly(endDate);
         if (!sameDay) {
             return -1; // invalid
         }
@@ -129,7 +132,7 @@ router.post("/apply", authMiddleware, async (req, res) => {
                AND status IN ('pending', 'approved')
                AND start_date <= ?
                AND end_date >= ?`,
-            [employeeId, toDateOnlyString(endDate), toDateOnlyString(startDate)]
+            [employeeId, formatDateOnly(endDate), formatDateOnly(startDate)]
         );
 
         if (overlapping.length > 0) {
@@ -139,10 +142,10 @@ router.post("/apply", authMiddleware, async (req, res) => {
         const holidays = await dbQuery(
             `SELECT holiday_date FROM public_holidays
              WHERE holiday_date BETWEEN ? AND ?`,
-            [toDateOnlyString(startDate), toDateOnlyString(endDate)]
+            [formatDateOnly(startDate), formatDateOnly(endDate)]
         );
 
-        const holidaySet = new Set(holidays.map((h) => toDateOnlyString(h.holiday_date)));
+        const holidaySet = new Set(holidays.map((h) => formatDateOnly(h.holiday_date)));
         const daysRequested = calculateLeaveDays(startDate, endDate, half_day, holidaySet);
 
         if (daysRequested === -1) {
@@ -171,8 +174,8 @@ router.post("/apply", authMiddleware, async (req, res) => {
             [
                 employeeId,
                 leave_type,
-                toDateOnlyString(startDate),
-                toDateOnlyString(endDate),
+                formatDateOnly(startDate),
+                formatDateOnly(endDate),
                 half_day,
                 daysRequested,
                 reason || null
@@ -181,15 +184,31 @@ router.post("/apply", authMiddleware, async (req, res) => {
 
         res.status(201).json({ message: "Leave application submitted successfully" });
     } catch (error) {
-        res.status(500).json({ error: "Failed to apply leave" });
+        console.error("APPLY LEAVE ERROR:", error);
+        res.status(500).json({ error: error.message || "Failed to apply leave" });
     }
 });
 
-// Employee views own leave history
+
 router.get("/my", authMiddleware, async (req, res) => {
     try {
         const rows = await dbQuery(
-            `SELECT lr.*, e.name AS employee_name
+            `SELECT 
+                lr.id,
+                lr.employee_id,
+                lr.leave_type,
+                DATE_FORMAT(lr.start_date, '%Y-%m-%d') AS start_date,
+                DATE_FORMAT(lr.end_date, '%Y-%m-%d') AS end_date,
+                lr.half_day,
+                lr.days_requested,
+                lr.reason,
+                lr.status,
+                lr.approved_by,
+                lr.approved_at,
+                lr.rejection_reason,
+                lr.created_at,
+                lr.updated_at,
+                e.name AS employee_name
              FROM leave_requests lr
              JOIN employees e ON e.id = lr.employee_id
              WHERE lr.employee_id = ?
@@ -226,7 +245,24 @@ router.get("/pending", authMiddleware, async (req, res) => {
 
         if (req.user.role === "admin") {
             sql = `
-                SELECT lr.*, e.name AS employee_name, e.department, e.manager_id
+                SELECT
+                    lr.id,
+                    lr.employee_id,
+                    lr.leave_type,
+                    DATE_FORMAT(lr.start_date, '%Y-%m-%d') AS start_date,
+                    DATE_FORMAT(lr.end_date, '%Y-%m-%d') AS end_date,
+                    lr.half_day,
+                    lr.days_requested,
+                    lr.reason,
+                    lr.status,
+                    lr.approved_by,
+                    lr.approved_at,
+                    lr.rejection_reason,
+                    lr.created_at,
+                    lr.updated_at,
+                    e.name AS employee_name,
+                    e.department,
+                    e.manager_id
                 FROM leave_requests lr
                 JOIN employees e ON e.id = lr.employee_id
                 WHERE lr.status = 'pending'
@@ -234,7 +270,24 @@ router.get("/pending", authMiddleware, async (req, res) => {
             `;
         } else {
             sql = `
-                SELECT lr.*, e.name AS employee_name, e.department, e.manager_id
+                SELECT
+                    lr.id,
+                    lr.employee_id,
+                    lr.leave_type,
+                    DATE_FORMAT(lr.start_date, '%Y-%m-%d') AS start_date,
+                    DATE_FORMAT(lr.end_date, '%Y-%m-%d') AS end_date,
+                    lr.half_day,
+                    lr.days_requested,
+                    lr.reason,
+                    lr.status,
+                    lr.approved_by,
+                    lr.approved_at,
+                    lr.rejection_reason,
+                    lr.created_at,
+                    lr.updated_at,
+                    e.name AS employee_name,
+                    e.department,
+                    e.manager_id
                 FROM leave_requests lr
                 JOIN employees e ON e.id = lr.employee_id
                 WHERE lr.status = 'pending' AND e.manager_id = ?

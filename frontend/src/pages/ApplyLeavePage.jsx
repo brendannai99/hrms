@@ -3,78 +3,116 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function ApplyLeavePage() {
-  const [form, setForm] = useState({
-    leave_type: "annual",
-    start_date: "",
-    end_date: "",
-    half_day: "none",
-    reason: ""
-  });
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    setError("");
-
-    try {
-      const res = await api.post("/leave/apply", form);
-      setMessage(res.data.message);
-      setForm({
+    const [form, setForm] = useState({
         leave_type: "annual",
         start_date: "",
         end_date: "",
         half_day: "none",
         reason: ""
-      });
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to apply leave");
-    }
-  };
+    });
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
 
-  return (
-    <div className="page-container">
-      <div className="card-narrow">
-        <h1 className="page-title">Apply Leave</h1>
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
-        {message && <p>{message}</p>}
-        {error && <p>{error}</p>}
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage("");
+        setError("");
 
-        <form onSubmit={handleSubmit}>
-          <label>Leave Type</label>
-          <select name="leave_type" value={form.leave_type} onChange={handleChange}>
-            <option value="annual">Annual Leave</option>
-            <option value="sick">Sick Leave</option>
-          </select>
+        try {
+            const res = await api.post("/leave/apply", form);
+            setMessage(res.data.message);
+            setForm({
+                leave_type: "annual",
+                start_date: "",
+                end_date: "",
+                half_day: "none",
+                reason: ""
+            });
+        } catch (err) {
+            setError(err.response?.data?.error || "Failed to apply leave");
+        }
+    };
 
-          <label>Start Date</label>
-          <input type="date" name="start_date" value={form.start_date} onChange={handleChange} required />
+    return (
+        <div className="page-container">
+            <div className="card-narrow">
+                <h1 className="page-title">Apply Leave</h1>
 
-          <label>End Date</label>
-          <input type="date" name="end_date" value={form.end_date} onChange={handleChange} required />
+                {message && <p className="message-success">{message}</p>}
+                {error && <p className="message-error">{error}</p>}
 
-          <label>Half Day</label>
-          <select name="half_day" value={form.half_day} onChange={handleChange}>
-            <option value="none">Full Day</option>
-            <option value="AM">AM Half-Day</option>
-            <option value="PM">PM Half-Day</option>
-          </select>
+                <form onSubmit={handleSubmit} className="form-stack">
+                    <label className="form-label">Leave Type</label>
+                    <select
+                        className="input-field"
+                        name="leave_type"
+                        value={form.leave_type}
+                        onChange={handleChange}
+                    >
+                        <option value="annual">Annual Leave</option>
+                        <option value="sick">Sick Leave</option>
+                    </select>
 
-          <label>Reason</label>
-          <textarea name="reason" value={form.reason} onChange={handleChange} />
+                    <label className="form-label">Start Date</label>
+                    <input
+                        className="input-field"
+                        type="date"
+                        name="start_date"
+                        value={form.start_date}
+                        onChange={handleChange}
+                        required
+                    />
 
-          <button type="submit">Submit</button>
-          <button type="button" onClick={() => navigate("/dashboard")}>Back</button>
-        </form>
-      </div>
-    </div>
-  );
+                    <label className="form-label">End Date</label>
+                    <input
+                        className="input-field"
+                        type="date"
+                        name="end_date"
+                        value={form.end_date}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <label className="form-label">Half Day</label>
+                    <select
+                        className="input-field"
+                        name="half_day"
+                        value={form.half_day}
+                        onChange={handleChange}
+                    >
+                        <option value="none">Full Day</option>
+                        <option value="AM">AM Half-Day</option>
+                        <option value="PM">PM Half-Day</option>
+                    </select>
+
+                    <label className="form-label">Reason</label>
+                    <textarea
+                        className="input-field"
+                        name="reason"
+                        value={form.reason}
+                        onChange={handleChange}
+                        rows="4"
+                    />
+
+                    <div className="dashboard-actions">
+                        <button type="submit" className="btn btn-primary">Submit</button>
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => navigate("/dashboard")}
+                        >
+                            Back
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 }
 
 export default ApplyLeavePage;
