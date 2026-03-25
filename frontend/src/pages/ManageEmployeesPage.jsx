@@ -9,10 +9,6 @@ function formatDetails(details) {
   try {
     const parsed = typeof details === "string" ? JSON.parse(details) : details;
 
-    if (parsed.failedAttempt) {
-      return `Failed attempt ${parsed.failedAttempt}`;
-    }
-
     return Object.entries(parsed)
       .map(([key, value]) => `${key}: ${value}`)
       .join(" | ");

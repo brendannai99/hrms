@@ -152,24 +152,43 @@ router.put("/:id/unlock", authMiddleware, roleMiddleware("admin"), (req, res) =>
     const { id } = req.params;
 
     db.query(
-        "UPDATE employees SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?",
+        "SELECT id, name, email FROM employees WHERE id = ?",
         [id],
-        async (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: "Failed to unlock employee account" });
+        (selectErr, rows) => {
+            if (selectErr) {
+                return res.status(500).json({ error: "Failed to fetch employee" });
             }
 
-            if (result.affectedRows === 0) {
+            if (rows.length === 0) {
                 return res.status(404).json({ error: "Employee not found" });
             }
 
-            await addAuditLog(req.user.id, "ACCOUNT_UNLOCKED", "employee", Number(id), {
-                unlockedByAdminId: req.user.id
-            }).catch(() => { });
+            const employee = rows[0];
 
-            res.json({ message: "Employee account unlocked successfully" });
+            db.query(
+                "UPDATE employees SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?",
+                [id],
+                async (err, result) => {
+                    if (err) {
+                        return res.status(500).json({ error: "Failed to unlock employee account" });
+                    }
+
+                    if (result.affectedRows === 0) {
+                        return res.status(404).json({ error: "Employee not found" });
+                    }
+
+                    await addAuditLog(req.user.id, "ACCOUNT_UNLOCKED", "employee", Number(id), {
+                        unlockedEmployeeId: employee.id,
+                        unlockedEmployeeName: employee.name,
+                        unlockedEmployeeEmail: employee.email,
+                        unlockedByAdminId: req.user.id,
+                        unlockedByAdminEmail: req.user.email
+                    }).catch(() => { });
+
+                    res.json({ message: "Employee account unlocked successfully" });
+                }
+            );
         }
     );
 });
-
 module.exports = router;

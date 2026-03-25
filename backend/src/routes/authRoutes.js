@@ -210,6 +210,7 @@ router.post("/refresh", async (req, res) => {
         });
 
         await addAuditLog(storedToken.employee_id, "REFRESH_TOKEN_ROTATED", "employee", storedToken.employee_id, {
+            email: storedToken.email,
             oldRefreshTokenId: storedToken.id
         }).catch(() => { });
 
@@ -235,6 +236,12 @@ router.post("/logout", authMiddleware, async (req, res) => {
     const { refreshToken } = req.body;
 
     try {
+        const userRows = await dbQuery(
+            "SELECT id, email FROM employees WHERE id = ?",
+            [req.user.id]
+        );
+        const user = userRows[0];
+
         if (refreshToken) {
             await dbQuery(
                 "UPDATE refresh_tokens SET revoked = 1 WHERE token = ? AND employee_id = ?",
@@ -242,7 +249,9 @@ router.post("/logout", authMiddleware, async (req, res) => {
             );
         }
 
-        await addAuditLog(req.user.id, "LOGOUT", "employee", req.user.id, {}).catch(() => { });
+        await addAuditLog(req.user.id, "LOGOUT", "employee", req.user.id, {
+            email: user?.email || req.user.email || null
+        }).catch(() => { });
 
         res.json({ message: "Logout successful" });
     } catch (error) {
@@ -307,6 +316,7 @@ router.put("/change-password", authMiddleware, async (req, res) => {
         }
 
         await addAuditLog(req.user.id, "PASSWORD_CHANGED", "employee", req.user.id, {
+            email: user.email,
             by: "self"
         }).catch(() => { });
 
@@ -329,7 +339,7 @@ router.put("/first-time-password", authMiddleware, async (req, res) => {
 
     try {
         const results = await dbQuery(
-            "SELECT id, must_change_password FROM employees WHERE id = ?",
+            "SELECT id, email, must_change_password FROM employees WHERE id = ?",
             [req.user.id]
         );
         const user = results[0];
@@ -354,6 +364,7 @@ router.put("/first-time-password", authMiddleware, async (req, res) => {
         }
 
         await addAuditLog(req.user.id, "FIRST_TIME_PASSWORD_SET", "employee", req.user.id, {
+            email: user.email,
             by: "self"
         }).catch(() => { });
 
@@ -371,6 +382,12 @@ router.put("/profile", authMiddleware, async (req, res) => {
     }
 
     try {
+        const userRows = await dbQuery(
+            "SELECT id, email FROM employees WHERE id = ?",
+            [req.user.id]
+        );
+        const user = userRows[0];
+
         const result = await dbQuery(
             "UPDATE employees SET name = ? WHERE id = ?",
             [name.trim(), req.user.id]
@@ -381,6 +398,7 @@ router.put("/profile", authMiddleware, async (req, res) => {
         }
 
         await addAuditLog(req.user.id, "PROFILE_UPDATED", "employee", req.user.id, {
+            email: user?.email || req.user.email || null,
             updatedFields: ["name"]
         }).catch(() => { });
 
@@ -470,6 +488,7 @@ router.post("/reset-password", async (req, res) => {
         }
 
         await addAuditLog(user.id, "PASSWORD_RESET_COMPLETED", "employee", user.id, {
+            email: user.email,
             method: "reset_token"
         }).catch(() => { });
 

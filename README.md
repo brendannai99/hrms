@@ -2,27 +2,27 @@ HRMS – Human Resource Management System
 
 ICT2504C Full Stack Secured Development Assignment
 
-This project is a Full Stack Human Resource Management System (HRMS) built using a cloud-hosted MySQL database.
+This project is a full stack Human Resource Management System (HRMS) built using a cloud-hosted MySQL database.
 
-The system allows administrators to manage employees, salaries, payroll issuance, and audit trails while implementing secure authentication and account protection mechanisms.
+The system allows administrators to manage employees, salaries, payroll issuance, and audit logs while implementing secure authentication and account protection mechanisms.
 
 Tech Stack
 
-Frontend
+Frontend:
 React (Vite)
 Axios
 React Router
 
-Backend
+Backend:
 Node.js
 Express.js
 JWT Authentication
 bcrypt password hashing
 
-Database
+Database:
 MySQL hosted on Aiven Cloud
 
-1. Requirements
+Requirements
 
 Install the following before running the project.
 
@@ -33,13 +33,11 @@ https://nodejs.org/
 
 Recommended version: Node.js version 18 or higher.
 
-After installation verify it using the commands:
+After installation verify using:
 node -v
 npm -v
 
-2. Clone the Project
-
-Clone the repository and navigate into the project folder.
+Clone the Project
 
 git clone <repository_url>
 cd hrms
@@ -47,341 +45,223 @@ cd hrms
 Project structure:
 
 hrms
+
 frontend
 backend
+launch-windows.bat
 README.md
-
-3. Database Setup (Cloud Database)
+Database Setup (Cloud Database)
 
 This project uses a MySQL database hosted on Aiven Cloud.
-Local MySQL installation is not required.
+Local MySQL installation is NOT required.
 
 All teammates connect to the same cloud database.
 
-However the database schema must still be created once.
+However, the database schema must be created once.
 
 Step 1 – Open MySQL Workbench
 
-If you do not have MySQL Workbench installed, download it from:
+Download:
 https://dev.mysql.com/downloads/workbench/
 
-Step 2 – Connect to the Cloud Database
+Step 2 – Connect to Database
 
-Create a new MySQL connection using the Aiven credentials.
-
-Example configuration:
-
+Use the credentials from your .env file:
+-----------------------------------------------------------
 Host: kabas-sql-jiggydiggity.f.aivencloud.com
 Port: 28603
 User: avnadmin
-Password: provided in the project .env file
-Database: defaultdb
+Password: (From .env)
+Database: hrms
+-----------------------------------------------------------
 
-If MySQL Workbench Shows "No Connection"
+Step 3 – Run Schema
 
-Sometimes MySQL Workbench cannot connect because the MySQL service is not running.
-
-To fix this in Windows:
-
-Press the Windows key
-
-Search for "Services"
-
-Open the Services application
-
-Look for MySQL or MySQL80
-
-Right click and select Start
-
-After the service starts, reconnect using MySQL Workbench.
-
-Step 3 – Create Tables
-
-Open the file located at:
-
+Open:
 backend/hrms_schema.sql
 
-Run the entire SQL script.
+Run the FULL script.
 
-This will create the following tables:
-
+This creates:
 employees
 salary_records
 payroll_records
 audit_logs
 refresh_tokens
 
-These tables support employee management, payroll processing, audit logging, and refresh token authentication.
-
-4. Backend Environment Setup
-
-Navigate to the backend folder.
+Backend Setup
 
 cd backend
 
-Create a .env file based on the .env.example file.
+Create a .env file and insert these:
+-----------------------------------------------------------
+JWT_SECRET=hrms_super_secret_key_2026_brendan_project
 
-Example configuration:
+DB_HOST=kabas-sql-jiggydiggity.f.aivencloud.com
+DB_PORT=28603
+DB_USER=avnadmin
+DB_PASSWORD= (From .env)
+DB_NAME=hrms
 
-APP_PORT = 3001
+EMAIL_USER=hrmsprojectofficial@gmail.com
+EMAIL_PASS=iiacavycqfecilac
+FRONTEND_URL=http://localhost:5173
+-----------------------------------------------------------
 
-CLIENT_URL = http://localhost:5173
+IMPORTANT:
+Do not commit .env files.
 
-DB_HOST = kabas-sql-jiggydiggity.f.aivencloud.com
-DB_PORT = 28603
-DB_USER = avnadmin
-DB_PWD = your_aiven_password
-DB_NAME = defaultdb
+Install Dependencies
 
-JWT_SECRET = super_secret_key
+Option A (Recommended)
 
-FRONTEND_URL = http://localhost:5173
+Just run:
+launch-windows.bat
 
-Important:
-Do not commit .env files to Git.
+This will:
 
-5. Install Dependencies
+install backend dependencies
+install frontend dependencies
+start both servers
+open browser automatically
 
-From the project root install dependencies for both frontend and backend.
+Option B (Manual)
 
-Install Frontend Dependencies
-
+Frontend:
 cd frontend
 npm install
 
-Install Backend Dependencies
-
-cd ../backend
+Backend:
+cd backend
 npm install
 
-Backend Dependencies
+Run the Application
 
-The backend uses the following packages:
+Option 1 (Recommended)
 
-express
-cors
-mysql2
-bcryptjs
-jsonwebtoken
-dotenv
-nodemon
-crypto
+Double click:
+launch-windows.bat
 
-If needed they can be installed manually using npm install.
+Option 2 (Manual)
 
-Frontend Dependencies
-
-The frontend uses:
-
-react
-vite
-axios
-react-router-dom
-
-6. Running the Application
-
-You need two terminals to run the system.
-
-Terminal 1 – Start Backend
-
-Navigate to backend folder.
-
+Terminal 1:
 cd backend
 npm run dev
 
-Expected output should show:
-
-Server running on port 3001
-Connected to MySQL database
-
-Backend URL:
-http://localhost:3001
-
-Terminal 2 – Start Frontend
-
-Navigate to frontend folder.
-
+Terminal 2:
 cd frontend
 npm run dev
 
-Frontend URL:
+Application URLs
+
+Frontend:
 http://localhost:5173
 
-Open this address in your browser.
+Backend:
+http://localhost:3001
 
-7. Running Everything From Root
+Admin Account (IMPORTANT)
 
-Install dependencies:
+Use this account to access admin features:
 
-cd frontend
-npm install
+-----------------------------------------------------------
+Email: adminnew@hrms.com
+Password: Admin123!
+-----------------------------------------------------------
 
-cd ../backend
-npm install
+This account allows you to:
 
-Start backend:
-
-cd backend
-npm run dev
-
-Start frontend in another terminal:
-
-cd frontend
-npm run dev
-
-8. First Login Flow
-
-The system requires new employees to change their password when logging in for the first time.
-
-Process:
-
-Admin creates a new employee account
-Employee logs in with temporary password
-User is redirected to the First Time Password page
+create new accounts
+update accounts
+unlock accounts
+manage salary and payroll
+view audit logs
+First Time Login Flow
+Admin creates employee account
+User logs in with temporary password
+User is redirected to First Time Password page
 User sets a new password
-User is granted access to the dashboard
+User can access dashboard
+Security Features
 
-9. Security Features Implemented
+Password Security:
+Passwords are hashed using bcrypt
+No plaintext passwords are stored
 
-The system includes multiple security features to protect user accounts.
+JWT Authentication:
+Access Token (15 minutes)
+Refresh Token (7 days)
 
-Password Security
+Refresh Token Rotation:
+Old token is invalidated
+New token is issued
 
-Passwords are hashed using bcrypt before being stored in the database.
-
-This ensures passwords are never stored as plain text.
-
-JWT Authentication
-
-The system uses JSON Web Tokens for authentication.
-
-Two types of tokens are used.
-
-Access Token
-Short-lived token used for authentication when accessing protected API endpoints.
-Valid for 15 minutes.
-
-Refresh Token
-Long-lived token stored in the database.
-Valid for 7 days.
-
-When the access token expires, the frontend automatically uses the refresh token to request a new access token.
-
-Refresh Token Rotation
-
-Every time a refresh token is used:
-
-The old refresh token is revoked.
-A new refresh token is generated.
-
-This prevents reuse of compromised tokens.
-
-Brute Force Login Protection
-
-Accounts are automatically locked after repeated failed login attempts.
-
-Security rules:
-
-Maximum failed login attempts: 5
+Brute Force Protection:
+Max attempts: 5
 Lock duration: 15 minutes
 
-Example sequence:
+Admin Unlock:
+Admins can unlock accounts in Manage Employees page
 
-Failed attempt 1
-Failed attempt 2
-Failed attempt 3
-Failed attempt 4
-Failed attempt 5
-Account locked
+Audit Logging:
+Tracks:
 
-Admin Account Unlock
+login success / failure
+password changes
+account lock / unlock
+payroll actions
+employee updates
+Common Issues
 
-Administrators can unlock locked employee accounts through the Manage Employees page.
+Port already in use:
+Change in .env:
+APP_PORT=3002
 
-Unlocking resets the failed login attempts and removes the lock.
+Backend cannot connect:
+Check DB_HOST, DB_PORT, DB_USER, DB_PWD
 
-Audit Logging
+Login fails:
+Check user exists in database
+Check correct password
+Check bcrypt hashing
 
-The system records important security and administrative actions in an audit trail.
+Dependencies missing:
+Run:
+npm install
 
-Examples of logged events include:
+or use:
+launch-windows.bat
 
-Login success
-Login failed
-Account locked
-Account unlocked
-Password changed
-Password reset requested
-Password reset completed
-Token refresh
-Logout
-Employee created
-Employee updated
+Project Structure
 
-The audit trail helps track all security-related activities in the system.
-
-10. Common Issues
-
-Port Already in Use
-
-Change the backend port in the .env file.
-
-Example:
-APP_PORT = 3002
-
-Restart the backend server.
-
-Backend Cannot Connect to Database
-
-Check the database credentials in the .env file:
-
-DB_HOST
-DB_PORT
-DB_USER
-DB_PWD
-DB_NAME
-
-Ensure the Aiven database credentials are correct.
-
-Login Fails
-
-Verify the following:
-
-The user exists in the employees table.
-Passwords are hashed using bcrypt.
-Correct email and password are used.
-
-11. Development Notes
-
-Important Backend Folders
-
+Backend:
 backend/src/routes
 backend/src/middleware
 backend/src/config
 
-Frontend Pages
-
+Frontend:
 frontend/src/pages
-
-API Service
-
 frontend/src/services/api.js
 
-This file handles all backend API requests and implements automatic JWT refresh handling.
-
-12. System Architecture
+Architecture
 
 Frontend (React)
-communicates with
-
+↓
 Backend API (Node.js + Express)
-
-which connects to
-
+↓
 Cloud Database (Aiven MySQL)
 
-Because the database is cloud-hosted:
+No local database required
+Shared database across team
 
-Teammates do not need local MySQL installations.
-No developer machine needs to host the database.
-All developers connect to the same shared database instance.
+Quick Start
+
+Clone repo
+Setup .env
+Run launch-windows.bat
+Login using:
+
+-----------------------------------------------------------
+Email: adminnew@hrms.com
+Password: Admin123!
+-----------------------------------------------------------
