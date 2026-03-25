@@ -7,6 +7,7 @@ function ResetPasswordPage() {
     const token = searchParams.get("token");
 
     const [newPassword, setNewPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
@@ -45,10 +46,18 @@ function ResetPasswordPage() {
                         <label>New Password</label>
                         <input
                             className="form-input"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                         />
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                            <input
+                                type="checkbox"
+                                checked={showPassword}
+                                onChange={() => setShowPassword(!showPassword)}
+                            />
+                            Show Password
+                        </label>
                     </div>
 
                     <div className="button-row-center">

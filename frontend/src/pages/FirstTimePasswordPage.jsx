@@ -5,6 +5,8 @@ import api from "../services/api";
 function FirstTimePasswordPage() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
@@ -49,20 +51,36 @@ function FirstTimePasswordPage() {
                         <label>New Password</label>
                         <input
                             className="form-input"
-                            type="password"
+                            type={showNewPassword ? "text" : "password"}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                         />
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                            <input
+                                type="checkbox"
+                                checked={showNewPassword}
+                                onChange={() => setShowNewPassword(!showNewPassword)}
+                            />
+                            Show New Password
+                        </label>
                     </div>
 
                     <div className="form-group">
                         <label>Confirm New Password</label>
                         <input
                             className="form-input"
-                            type="password"
+                            type={showConfirmPassword ? "text" : "password"}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                            <input
+                                type="checkbox"
+                                checked={showConfirmPassword}
+                                onChange={() => setShowConfirmPassword(!showConfirmPassword)}
+                            />
+                            Show Confirm Password
+                        </label>
                     </div>
 
                     <div className="button-row-center">

@@ -5,6 +5,7 @@ import api from "../services/api";
 function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -55,12 +56,20 @@ function LoginPage() {
                         <label>Password</label>
                         <input
                             className="form-input"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             name="password"
                             autoComplete="new-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                            <input
+                                type="checkbox"
+                                checked={showPassword}
+                                onChange={() => setShowPassword(!showPassword)}
+                            />
+                            Show Password
+                        </label>
                     </div>
 
                     <div className="button-row-center">
