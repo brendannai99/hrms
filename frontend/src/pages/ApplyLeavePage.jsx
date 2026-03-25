@@ -38,20 +38,104 @@ function ApplyLeavePage() {
         }
     };
 
+    const labelStyle = {
+        display: "block",
+        fontSize: "15px",
+        fontWeight: 600,
+        color: "#f8fafc",
+        marginBottom: "8px"
+    };
+
+    const inputStyle = {
+        width: "100%",
+        padding: "12px 14px",
+        borderRadius: "10px",
+        border: "1px solid rgba(255,255,255,0.16)",
+        background: "rgba(15, 23, 42, 0.88)",
+        color: "#f8fafc",
+        fontSize: "15px",
+        boxSizing: "border-box",
+        outline: "none"
+    };
+
+    const textAreaStyle = {
+        ...inputStyle,
+        minHeight: "130px",
+        resize: "vertical"
+    };
+
     return (
-        <div className="page-container leave-page">
-            <div className="card-narrow leave-card">
+        <div className="page-container">
+            <div
+                className="card-narrow"
+                style={{
+                    width: "100%",
+                    maxWidth: "780px",
+                    margin: "0 auto",
+                    padding: "36px 42px"
+                }}
+            >
                 <h1 className="page-title">Apply Leave</h1>
 
-                {message && <p className="message-success">{message}</p>}
-                {error && <p className="message-error">{error}</p>}
+                {message && (
+                    <div
+                        style={{
+                            width: "100%",
+                            padding: "12px 16px",
+                            borderRadius: "10px",
+                            fontSize: "15px",
+                            fontWeight: 600,
+                            marginBottom: "10px",
+                            boxSizing: "border-box",
+                            background: "rgba(34, 197, 94, 0.18)",
+                            border: "1px solid rgba(34, 197, 94, 0.45)",
+                            color: "#bbf7d0"
+                        }}
+                    >
+                        {message}
+                    </div>
+                )}
 
-                <form onSubmit={handleSubmit} className="leave-form">
-                    <div className="leave-grid">
-                        <div className="field-group">
-                            <label className="form-label">Leave Type</label>
+                {error && (
+                    <div
+                        style={{
+                            width: "100%",
+                            padding: "12px 16px",
+                            borderRadius: "10px",
+                            fontSize: "15px",
+                            fontWeight: 600,
+                            marginBottom: "10px",
+                            boxSizing: "border-box",
+                            background: "rgba(239, 68, 68, 0.18)",
+                            border: "1px solid rgba(239, 68, 68, 0.45)",
+                            color: "#fecaca"
+                        }}
+                    >
+                        {error}
+                    </div>
+                )}
+
+                <form
+                    onSubmit={handleSubmit}
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "22px",
+                        width: "100%"
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "20px 24px",
+                            width: "100%"
+                        }}
+                    >
+                        <div>
+                            <label style={labelStyle}>Leave Type</label>
                             <select
-                                className="input-field"
+                                style={inputStyle}
                                 name="leave_type"
                                 value={form.leave_type}
                                 onChange={handleChange}
@@ -61,24 +145,24 @@ function ApplyLeavePage() {
                             </select>
                         </div>
 
-                        <div className="field-group">
-                            <label className="form-label">Leave Duration</label>
+                        <div>
+                            <label style={labelStyle}>Leave Duration</label>
                             <select
-                                className="input-field"
+                                style={inputStyle}
                                 name="half_day"
                                 value={form.half_day}
                                 onChange={handleChange}
                             >
                                 <option value="none">Full Day</option>
-                                <option value="AM">AM Half-Day</option>
-                                <option value="PM">PM Half-Day</option>
+                                <option value="AM">AM Leave</option>
+                                <option value="PM">PM Leave</option>
                             </select>
                         </div>
 
-                        <div className="field-group">
-                            <label className="form-label">Start Date</label>
+                        <div>
+                            <label style={labelStyle}>Start Date</label>
                             <input
-                                className="input-field"
+                                style={inputStyle}
                                 type="date"
                                 name="start_date"
                                 value={form.start_date}
@@ -87,10 +171,10 @@ function ApplyLeavePage() {
                             />
                         </div>
 
-                        <div className="field-group">
-                            <label className="form-label">End Date</label>
+                        <div>
+                            <label style={labelStyle}>End Date</label>
                             <input
-                                className="input-field"
+                                style={inputStyle}
                                 type="date"
                                 name="end_date"
                                 value={form.end_date}
@@ -98,25 +182,39 @@ function ApplyLeavePage() {
                                 required
                             />
                         </div>
+
+                        <div style={{ gridColumn: "1 / -1" }}>
+                            <label style={labelStyle}>Reason</label>
+                            <textarea
+                                style={textAreaStyle}
+                                name="reason"
+                                value={form.reason}
+                                onChange={handleChange}
+                                rows="4"
+                                placeholder="Optional reason for leave"
+                            />
+                        </div>
                     </div>
 
-                    <div className="field-group full-width">
-                        <label className="form-label">Reason</label>
-                        <textarea
-                            className="input-field input-textarea"
-                            name="reason"
-                            value={form.reason}
-                            onChange={handleChange}
-                            rows="4"
-                            placeholder="Optional reason for leave"
-                        />
-                    </div>
-
-                    <div className="leave-actions">
-                        <button type="submit" className="btn btn-primary">Submit</button>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "16px",
+                            marginTop: "12px"
+                        }}
+                    >
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ padding: "10px 20px" }}
+                        >
+                            Submit
+                        </button>
                         <button
                             type="button"
                             className="btn btn-secondary"
+                            style={{ padding: "10px 20px" }}
                             onClick={() => navigate("/dashboard")}
                         >
                             Back

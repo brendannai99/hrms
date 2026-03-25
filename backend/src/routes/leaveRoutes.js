@@ -58,7 +58,7 @@ function calculateLeaveDays(startDate, endDate, halfDay, holidaySet) {
     if (halfDay !== "none") {
         const sameDay = formatDateOnly(startDate) === formatDateOnly(endDate);
         if (!sameDay) {
-            return -1; // invalid
+            return -1;
         }
         return 0.5;
     }
@@ -136,7 +136,9 @@ router.post("/apply", authMiddleware, async (req, res) => {
         );
 
         if (overlapping.length > 0) {
-            return res.status(400).json({ error: "Overlapping leave dates are not allowed" });
+            return res.status(400).json({
+                error: "You already have a leave request on the selected date(s)."
+            });
         }
 
         const holidays = await dbQuery(
@@ -145,15 +147,27 @@ router.post("/apply", authMiddleware, async (req, res) => {
             [formatDateOnly(startDate), formatDateOnly(endDate)]
         );
 
-        const holidaySet = new Set(holidays.map((h) => formatDateOnly(h.holiday_date)));
+        const holidaySet = new Set(
+            holidays.map((h) => {
+                if (typeof h.holiday_date === "string") {
+                    return h.holiday_date.slice(0, 10);
+                }
+                return formatDateOnly(new Date(h.holiday_date));
+            })
+        );
+
         const daysRequested = calculateLeaveDays(startDate, endDate, half_day, holidaySet);
 
         if (daysRequested === -1) {
-            return res.status(400).json({ error: "Half-day leave only supports a single-day selection" });
+            return res.status(400).json({
+                error: "Half-day leave only supports a single-day selection."
+            });
         }
 
         if (daysRequested <= 0) {
-            return res.status(400).json({ error: "Selected dates contain no valid working leave days" });
+            return res.status(400).json({
+                error: "Selected date falls on a weekend or public holiday. Please choose a working day."
+            });
         }
 
         if (leave_type === "annual") {
@@ -182,13 +196,12 @@ router.post("/apply", authMiddleware, async (req, res) => {
             ]
         );
 
-        res.status(201).json({ message: "Leave application submitted successfully" });
+        res.status(201).json({ message: "Leave application submitted successfully." });
     } catch (error) {
         console.error("APPLY LEAVE ERROR:", error);
         res.status(500).json({ error: error.message || "Failed to apply leave" });
     }
 });
-
 
 router.get("/my", authMiddleware, async (req, res) => {
     try {
@@ -378,7 +391,7 @@ router.put("/:id/status", authMiddleware, async (req, res) => {
 router.get("/holidays", authMiddleware, async (req, res) => {
     try {
         const rows = await dbQuery(
-            "SELECT * FROM public_holidays ORDER BY holiday_date ASC"
+            "SELECT id, DATE_FORMAT(holiday_date, '%Y-%m-%d') AS holiday_date, name FROM public_holidays ORDER BY holiday_date ASC"
         );
         res.json(rows);
     } catch (error) {
@@ -411,6 +424,36 @@ router.post("/holidays", authMiddleware, async (req, res) => {
     }
 });
 
+router.put("/holidays/:id", authMiddleware, async (req, res) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Access denied" });
+    }
+
+    const { holiday_date, name } = req.body;
+
+    if (!holiday_date || !name) {
+        return res.status(400).json({ error: "Holiday date and name are required" });
+    }
+
+    try {
+        const result = await dbQuery(
+            "UPDATE public_holidays SET holiday_date = ?, name = ? WHERE id = ?",
+            [holiday_date, name, req.params.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Holiday not found" });
+        }
+
+        res.json({ message: "Public holiday updated successfully" });
+    } catch (error) {
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(400).json({ error: "Holiday date already exists" });
+        }
+        res.status(500).json({ error: "Failed to update holiday" });
+    }
+});
+
 router.delete("/holidays/:id", authMiddleware, async (req, res) => {
     if (req.user.role !== "admin") {
         return res.status(403).json({ error: "Access denied" });
@@ -428,7 +471,7 @@ router.delete("/holidays/:id", authMiddleware, async (req, res) => {
 
         res.json({ message: "Public holiday deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: "Failed to delete public holiday" });
+        res.status(500).json({ error: "Failed to delete holiday" });
     }
 });
 
