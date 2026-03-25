@@ -25,6 +25,11 @@ function startOfToday() {
     return today;
 }
 
+function parseDateOnly(dateString) {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+}
+
 function getDatesInRange(startDate, endDate) {
     const dates = [];
     const current = new Date(startDate);
@@ -142,19 +147,22 @@ router.post("/apply", authMiddleware, async (req, res) => {
         }
 
         const holidays = await dbQuery(
-            `SELECT holiday_date FROM public_holidays
+            `SELECT holiday_date, name FROM public_holidays
              WHERE holiday_date BETWEEN ? AND ?`,
             [formatDateOnly(startDate), formatDateOnly(endDate)]
         );
 
-        const holidaySet = new Set(
+        const holidayMap = new Map(
             holidays.map((h) => {
-                if (typeof h.holiday_date === "string") {
-                    return h.holiday_date.slice(0, 10);
-                }
-                return formatDateOnly(new Date(h.holiday_date));
+                const dateKey =
+                    typeof h.holiday_date === "string"
+                        ? h.holiday_date.slice(0, 10)
+                        : formatDateOnly(new Date(h.holiday_date));
+                return [dateKey, h.name];
             })
         );
+
+        const holidaySet = new Set(holidayMap.keys());
 
         const daysRequested = calculateLeaveDays(startDate, endDate, half_day, holidaySet);
 
@@ -165,8 +173,26 @@ router.post("/apply", authMiddleware, async (req, res) => {
         }
 
         if (daysRequested <= 0) {
+            const dates = getDatesInRange(startDate, endDate);
+
+            const isAllWeekend = dates.every((d) => isWeekend(d));
+            const holidayHit = dates.find((d) => holidaySet.has(formatDateOnly(d)));
+
+            if (isAllWeekend) {
+                return res.status(400).json({
+                    error: "Selected date falls on a weekend."
+                });
+            }
+
+            if (holidayHit) {
+                const holidayName = holidayMap.get(formatDateOnly(holidayHit));
+                return res.status(400).json({
+                    error: `Selected date falls on a public holiday${holidayName ? ` (${holidayName})` : ""}.`
+                });
+            }
+
             return res.status(400).json({
-                error: "Selected date falls on a weekend or public holiday. Please choose a working day."
+                error: "Selected dates contain no valid working leave days."
             });
         }
 
@@ -410,6 +436,17 @@ router.post("/holidays", authMiddleware, async (req, res) => {
         return res.status(400).json({ error: "Holiday date and name are required" });
     }
 
+    const selectedDate = parseDateOnly(holiday_date);
+    const today = startOfToday();
+
+    if (Number.isNaN(selectedDate.getTime())) {
+        return res.status(400).json({ error: "Invalid holiday date format" });
+    }
+
+    if (selectedDate < today) {
+        return res.status(400).json({ error: "Public holiday date cannot be in the past." });
+    }
+
     try {
         await dbQuery(
             "INSERT INTO public_holidays (holiday_date, name) VALUES (?, ?)",
@@ -433,6 +470,17 @@ router.put("/holidays/:id", authMiddleware, async (req, res) => {
 
     if (!holiday_date || !name) {
         return res.status(400).json({ error: "Holiday date and name are required" });
+    }
+
+    const selectedDate = parseDateOnly(holiday_date);
+    const today = startOfToday();
+
+    if (Number.isNaN(selectedDate.getTime())) {
+        return res.status(400).json({ error: "Invalid holiday date format" });
+    }
+
+    if (selectedDate < today) {
+        return res.status(400).json({ error: "Public holiday date cannot be in the past." });
     }
 
     try {
