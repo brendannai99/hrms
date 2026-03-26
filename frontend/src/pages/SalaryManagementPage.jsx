@@ -180,13 +180,11 @@ function SalaryManagementPage() {
 
   useEffect(() => {
     loadPage(auditFilters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!user) return;
     loadPage(auditFilters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auditFilters.page, auditFilters.rowsPerPage, auditFilters.action, auditFilters.target_type]);
 
   const totals = useMemo(
