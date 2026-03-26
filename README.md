@@ -1,267 +1,170 @@
-HRMS – Human Resource Management System
 
-ICT2504C Full Stack Secured Development Assignment
+---
 
-This project is a full stack Human Resource Management System (HRMS) built using a cloud-hosted MySQL database.
+# 🧑‍💼 HRMS – Human Resource Management System
 
-The system allows administrators to manage employees, salaries, payroll issuance, and audit logs while implementing secure authentication and account protection mechanisms.
+### 🚀 Portfolio Edition | ICT2504C Full Stack Secured Development
 
-Tech Stack
+## 🎯 Overview
 
-Frontend:
-React (Vite)
-Axios
-React Router
+A **production-style Human Resource Management System (HRMS)** built with a strong emphasis on
+**security, modular design, and real-world HR workflows**.
 
-Backend:
-Node.js
-Express.js
-JWT Authentication
-bcrypt password hashing
+Supports Admins, Managers, and Employees with:
 
-Database:
-MySQL hosted on Aiven Cloud
+* Secure authentication & access control
+* Employee lifecycle management
+* Organizational hierarchy tracking
+* Performance evaluation
+* Payroll and salary processing
+* Full audit logging
 
-Requirements
+---
 
-Install the following before running the project.
+## ✨ Core Features
 
-Node.js
+### 🔐 Authentication & Security
 
-Download Node.js from:
-https://nodejs.org/
+* JWT-based authentication (Access + Refresh Tokens)
+* Refresh Token Rotation (single-use tokens)
+* bcrypt password hashing
+* Brute-force protection (account lock)
+* Role-based access control (RBAC)
 
-Recommended version: Node.js version 18 or higher.
+---
 
-After installation verify using:
-node -v
-npm -v
+### 👤 Employee Management
 
-Clone the Project
+* Admin onboarding
+* Profile updates
+* Role assignment
 
-git clone <repository_url>
+---
+
+### 🌳 Org Chart & Performance Management
+
+* Hierarchical reporting structure
+* Org chart visualization (tree structure)
+* Manager-only performance rating system
+* Rating scale (1–5 + comments)
+* Circular dependency prevention
+
+---
+
+### 📅 Leave Management
+
+* Leave application & approval
+* Validation (no overlaps, no past dates)
+* Leave balance tracking
+
+---
+
+### 💰 Payroll System
+
+* Salary versioning (historical tracking)
+* Monthly payroll generation
+* Payslip breakdown
+* Immutable payroll records
+
+---
+
+### 📊 Audit & Monitoring
+
+* Login tracking
+* Payroll actions
+* Account changes
+* Admin activity logs
+
+---
+
+## 🧠 System Architecture
+
+```mermaid
+flowchart TD
+    A[Frontend - React] --> B[Backend API - Node.js/Express]
+    B --> C[Auth Module]
+    B --> D[Employee Module]
+    B --> E[Org Chart Module]
+    B --> F[Leave Module]
+    B --> G[Payroll Module]
+    B --> H[Audit Logger]
+    C --> I[(MySQL - Aiven)]
+    D --> I
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+```
+
+---
+
+## 🔐 Authentication Flow
+
+```mermaid
+sequenceDiagram
+    User->>Server: Login
+    Server->>User: Access + Refresh Token
+    User->>Server: API Request (Access Token)
+    Server->>User: Response
+    User->>Server: Refresh Token
+    Server->>User: New Tokens
+```
+
+---
+
+## 🛠 Tech Stack
+
+| Layer    | Technology          |
+| -------- | ------------------- |
+| Frontend | React (Vite), Axios |
+| Backend  | Node.js, Express    |
+| Auth     | JWT, bcrypt         |
+| Database | MySQL (Aiven Cloud) |
+
+---
+
+## ⚙️ Setup
+
+```bash
+git clone <repo url>
 cd hrms
+```
 
-Project structure:
+Paste the provided separate `.env` file in /backend:
 
-hrms
+```
+The .env shall be provided separately upon request. The .env file is essential for the connection to the shared database, establishing localhost connection, and employee credentials
+```
 
-frontend
-backend
-launch-windows.bat
-README.md
-Database Setup (Cloud Database)
+---
 
-This project uses a MySQL database hosted on Aiven Cloud.
-Local MySQL installation is NOT required.
+## ▶️ Run
 
-All teammates connect to the same cloud database.
+```bash
+launch-windows.bat (for Windows)
+launch-mac.command (for Mac)
+```
 
-However, the database schema must be created once.
+or manually:
 
-Step 1 – Open MySQL Workbench
+```bash
+cd backend && npm install && npm run dev
+cd frontend && npm install && npm run dev
+```
 
-Download:
-https://dev.mysql.com/downloads/workbench/
+---
 
-Step 2 – Connect to Database
+## 🌐 Access
 
-Use the credentials from your .env file:
------------------------------------------------------------
-Host: kabas-sql-jiggydiggity.f.aivencloud.com
-Port: 28603
-User: avnadmin
-Password: (From .env)
-Database: hrms
------------------------------------------------------------
+Frontend: [http://localhost:5173](http://localhost:5173)
+Backend: [http://localhost:3001](http://localhost:3001)
 
-Step 3 – Run Schema
+---
 
-Open:
-backend/hrms_schema.sql
+## 🔐 Demo Credentials
 
-Run the FULL script.
+```
+adminnew@hrms.com
+Admin123!
+```
 
-This creates:
-employees
-salary_records
-payroll_records
-audit_logs
-refresh_tokens
-
-Backend Setup
-
-cd backend
-
-Create a .env file and insert these:
------------------------------------------------------------
-JWT_SECRET=hrms_super_secret_key_2026_brendan_project
-
-DB_HOST=kabas-sql-jiggydiggity.f.aivencloud.com
-DB_PORT=28603
-DB_USER=avnadmin
-DB_PASSWORD= (From .env)
-DB_NAME=hrms
-
-EMAIL_USER=hrmsprojectofficial@gmail.com
-EMAIL_PASS=iiacavycqfecilac
-FRONTEND_URL=http://localhost:5173
------------------------------------------------------------
-
-IMPORTANT:
-Do not commit .env files.
-
-Install Dependencies
-
-Option A (Recommended)
-
-Just run:
-launch-windows.bat
-
-This will:
-
-install backend dependencies
-install frontend dependencies
-start both servers
-open browser automatically
-
-Option B (Manual)
-
-Frontend:
-cd frontend
-npm install
-
-Backend:
-cd backend
-npm install
-
-Run the Application
-
-Option 1 (Recommended)
-
-Double click:
-launch-windows.bat
-
-Option 2 (Manual)
-
-Terminal 1:
-cd backend
-npm run dev
-
-Terminal 2:
-cd frontend
-npm run dev
-
-Application URLs
-
-Frontend:
-http://localhost:5173
-
-Backend:
-http://localhost:3001
-
-Admin Account (IMPORTANT)
-
-Use this account to access admin features:
-
------------------------------------------------------------
-Email: adminnew@hrms.com
-Password: Admin123!
------------------------------------------------------------
-
-This account allows you to:
-
-create new accounts
-update accounts
-unlock accounts
-manage salary and payroll
-view audit logs
-First Time Login Flow
-Admin creates employee account
-User logs in with temporary password
-User is redirected to First Time Password page
-User sets a new password
-User can access dashboard
-Security Features
-
-Password Security:
-Passwords are hashed using bcrypt
-No plaintext passwords are stored
-
-JWT Authentication:
-Access Token (15 minutes)
-Refresh Token (7 days)
-
-Refresh Token Rotation:
-Old token is invalidated
-New token is issued
-
-Brute Force Protection:
-Max attempts: 5
-Lock duration: 15 minutes
-
-Admin Unlock:
-Admins can unlock accounts in Manage Employees page
-
-Audit Logging:
-Tracks:
-
-login success / failure
-password changes
-account lock / unlock
-payroll actions
-employee updates
-Common Issues
-
-Port already in use:
-Change in .env:
-APP_PORT=3002
-
-Backend cannot connect:
-Check DB_HOST, DB_PORT, DB_USER, DB_PWD
-
-Login fails:
-Check user exists in database
-Check correct password
-Check bcrypt hashing
-
-Dependencies missing:
-Run:
-npm install
-
-or use:
-launch-windows.bat
-
-Project Structure
-
-Backend:
-backend/src/routes
-backend/src/middleware
-backend/src/config
-
-Frontend:
-frontend/src/pages
-frontend/src/services/api.js
-
-Architecture
-
-Frontend (React)
-↓
-Backend API (Node.js + Express)
-↓
-Cloud Database (Aiven MySQL)
-
-No local database required
-Shared database across team
-
-Quick Start
-
-Clone repo
-Setup .env
-Run launch-windows.bat
-Login using:
-
------------------------------------------------------------
-Email: adminnew@hrms.com
-Password: Admin123!
------------------------------------------------------------

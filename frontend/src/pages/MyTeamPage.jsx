@@ -33,6 +33,14 @@ function MyTeamPage() {
   const [openPeriods, setOpenPeriods] = useState([]);
   const [teamRatings, setTeamRatings] = useState([]);
 
+  const labels = {
+    1: "Poor",
+    2: "Below Average",
+    3: "Average",
+    4: "Good",
+    5: "Excellent" 
+  }
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -202,7 +210,11 @@ function MyTeamPage() {
                     sx={{ color: "white", ".MuiOutlinedInput-notchedOutline": { borderColor: "gray" } }}
                     MenuProps={{ PaperProps: { sx: { bgcolor: "#2b3145", color: "white" } } }}
                   >
-                    {[1, 2, 3, 4, 5].map(num => <MenuItem key={num} value={num}>{num} - {num === 5 ? "Excellent" : num === 1 ? "Poor" : "Average"}</MenuItem>)}
+                    {[1, 2, 3, 4, 5].map((num) => (
+  <MenuItem key={num} value={num}>
+    {num} - {labels[num]}
+  </MenuItem>
+))}
                   </Select>
                 </FormControl>
 

@@ -11,20 +11,17 @@ function DashboardPage() {
         const fetchUser = async () => {
             try {
                 const res = await api.get("/auth/me");
-
                 if (res.data.must_change_password) {
                     navigate("/first-time-password");
                     return;
                 }
-
                 setUser(res.data);
             } catch {
-                setError("Failed to load user");
+                setError("Failed to load user information");
                 localStorage.removeItem("token");
                 navigate("/");
             }
         };
-
         fetchUser();
     }, [navigate]);
 
@@ -33,6 +30,7 @@ function DashboardPage() {
             const refreshToken = localStorage.getItem("refreshToken");
             await api.post("/auth/logout", { refreshToken });
         } catch {
+            // Silence logout errors
         } finally {
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
@@ -40,233 +38,197 @@ function DashboardPage() {
         }
     };
 
-    if (error) {
-        return <p>{error}</p>;
-    }
+    if (error) return <p style={{ color: "white", textAlign: "center", marginTop: "50px" }}>{error}</p>;
+    if (!user) return <p className="center-text">Initialising System...</p>;
 
-    if (!user) {
-        return <p className="center-text">Loading...</p>;
-    }
-
-    const sectionTitleStyle = {
-        fontSize: "18px",
-        fontWeight: 800,
-        color: "#f8fafc",
-        marginBottom: "14px",
-        letterSpacing: "0.5px",
+    // --- PREMIUM THEME & ANIMATION STYLES ---
+    const layoutStyle = {
         display: "flex",
-        alignItems: "center",
-        gap: "8px"
+        height: "100vh",
+        background: "radial-gradient(circle at 50% 50%, #1e293b 0%, #080c14 100%)",
+        color: "#f8fafc",
+        overflow: "hidden",
+        fontFamily: "'Inter', sans-serif"
     };
 
-    const sectionCardStyle = {
-        background: "rgba(15, 23, 42, 0.6)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: "14px",
-        padding: "20px",
-        marginBottom: "18px",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.35)"
+    const sidebarStyle = {
+        width: "300px",
+        background: "rgba(10, 15, 25, 0.8)",
+        backdropFilter: "blur(25px)",
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+        padding: "40px 28px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between"
     };
 
-    const sectionButtonGridStyle = {
+    const mainContentStyle = {
+        flex: 1,
+        padding: "40px",
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: "12px"
+        gridTemplateColumns: "1fr 1fr",
+        gridTemplateRows: "1fr 1fr",
+        gap: "28px",
+        maxWidth: "1300px"
     };
 
-    const actionButtonStyle = {
-        width: "100%",
-        padding: "12px 14px",
-        fontWeight: 600,
-        transition: "all 0.2s ease"
-    };
+    const cardStyle = {
+    background: "rgba(30, 41, 59, 0.3)",
+    borderRadius: "28px",
+    border: "1px solid rgba(255,255,255,0.06)",
+    padding: "36px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
+    transition: "all 0.3s ease-out", 
+    cursor: "default"
+};
 
-    const statCardStyle = {
-        background: "linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95))",
-        border: "1px solid rgba(255,255,255,0.1)",
+    const buttonStyle = {
+        padding: "14px 22px",
+        background: "rgba(59, 130, 246, 0.1)",
+        color: "#60a5fa",
         borderRadius: "14px",
-        padding: "18px",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.35)"
+        border: "1px solid rgba(59, 130, 246, 0.3)",
+        fontSize: "14px",
+        fontWeight: 600,
+        cursor: "pointer",
+        textAlign: "left",
+        transition: "all 0.2s ease-in-out"
     };
 
-    const renderActionButton = (label, path) => (
-        <button
-            className="btn btn-primary"
-            style={actionButtonStyle}
-            onClick={() => navigate(path)}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.4)";
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0px)";
-                e.currentTarget.style.boxShadow = "none";
-            }}
+    const badgeStyle = {
+        padding: "6px 12px",
+        background: "rgba(255, 255, 255, 0.05)",
+        color: "#94a3b8",
+        borderRadius: "10px",
+        fontSize: "12px",
+        fontWeight: 600,
+        border: "1px solid rgba(255,255,255,0.1)",
+        display: "inline-block",
+        marginTop: "10px"
+    };
+
+    const renderActionCard = (category, title, buttons) => (
+    <section 
+        style={cardStyle}
+        onMouseEnter={(e) => {
+            // REDUCED: Minimal lift, no scale, and a softer shadow
+            e.currentTarget.style.transform = "translateY(-4px)"; 
+            e.currentTarget.style.background = "rgba(30, 41, 59, 0.45)";
+            e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.2)";
+            e.currentTarget.style.boxShadow = "0 12px 24px rgba(0,0,0,0.2)";
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.background = "rgba(30, 41, 59, 0.3)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+            e.currentTarget.style.boxShadow = "none";
+        }}
         >
-            {label}
-        </button>
+            <div>
+                <div style={{ fontSize: "12px", color: "#60a5fa", fontWeight: 800, letterSpacing: "1.5px", marginBottom: "8px" }}>
+                    {category.toUpperCase()}
+                </div>
+                <h3 style={{ margin: 0, fontSize: "24px", fontWeight: 700 }}>{title}</h3>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                {buttons.map((btn, index) => (
+                    <button 
+                        key={index}
+                        style={buttonStyle} 
+                        onClick={() => navigate(btn.path)}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = "#3b82f6";
+                            e.target.style.color = "white";
+                            e.target.style.transform = "scale(1.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = "rgba(59, 130, 246, 0.1)";
+                            e.target.style.color = "#60a5fa";
+                            e.target.style.transform = "scale(1)";
+                        }}
+                    >
+                        {btn.label}
+                    </button>
+                ))}
+            </div>
+        </section>
     );
 
     return (
-        <div className="page-container">
-            <div
-                className="card-narrow"
-                style={{
-                    width: "100%",
-                    maxWidth: "1080px",
-                    margin: "0 auto",
-                    padding: "36px 42px"
-                }}
-            >
-                <h1 className="page-title">Dashboard</h1>
+        <div style={layoutStyle}>
+            {/* --- SIDEBAR --- */}
+            <aside style={sidebarStyle}>
+                <div>
+                    <h1 style={{ fontSize: "28px", fontWeight: 900, marginBottom: "50px", letterSpacing: "-1.5px" }}>
+                        HRMS<span style={{ color: "#3b82f6" }}>.</span>
+                    </h1>
+                    
+                    <div style={{ marginBottom: "40px" }}>
+                        <div style={{ fontSize: "20px", fontWeight: 700 }}>{user.name}</div>
+                        <div style={{ fontSize: "14px", color: "#64748b", marginBottom: "8px" }}>{user.email}</div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                           <span style={{ ...badgeStyle, color: "#60a5fa", borderColor: "rgba(59, 130, 246, 0.3)" }}>
+                               {user.role === 'admin' ? 'System Administrator' : user.role === 'manager' ? 'Department Manager' : 'Employee'}
+                           </span>
+                           <span style={badgeStyle}>{user.department || "General Operations"}</span>
+                        </div>
+                    </div>
+                </div>
 
-                <div
-                    style={{
-                        background: "rgba(15, 23, 42, 0.45)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        borderRadius: "14px",
-                        padding: "20px",
-                        marginBottom: "24px",
-                        color: "#f8fafc",
-                        lineHeight: "1.8",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.28)"
+                <button 
+                    onClick={handleLogout}
+                    onMouseEnter={(e) => e.target.style.background = "#ef4444"}
+                    onMouseLeave={(e) => e.target.style.background = "transparent"}
+                    style={{ 
+                        padding: "14px", 
+                        background: "transparent", 
+                        color: "#ef4444", 
+                        borderRadius: "14px", 
+                        border: "1px solid #ef4444", 
+                        fontWeight: 700, 
+                        cursor: "pointer", 
+                        transition: "0.2s" 
                     }}
                 >
-                    <div style={{ fontSize: "22px", fontWeight: 800, marginBottom: "6px" }}>
-                        Welcome, {user.name}
-                    </div>
-                    <div>Email: {user.email}</div>
-                    <div style={{ textTransform: "capitalize" }}>Role: {user.role}</div>
-                    <div>Department: {user.department || "-"}</div>
-                </div>
+                    Logout
+                </button>
+            </aside>
 
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                        gap: "14px",
-                        marginBottom: "24px"
-                    }}
-                >
-                    <div style={statCardStyle}>
-                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "6px" }}>
-                            Current Role
-                        </div>
-                        <div style={{ fontSize: "24px", fontWeight: 800, color: "#f8fafc", textTransform: "capitalize" }}>
-                            {user.role}
-                        </div>
-                    </div>
+            {/* --- MAIN MODULE GRID --- */}
+            <main style={mainContentStyle}>
+                
+                {renderActionCard("Personnel", "Account Management", [
+                    { label: "My Profile", path: "/profile" },
+                    { label: "Security Settings", path: "/change-password" },
+                    ...(user.role === "admin" ? [
+                        { label: "Onboard New Employee", path: "/create-employee" },
+                        { label: "Employee Directory", path: "/employees" }
+                    ] : [])
+                ])}
 
-                    <div style={statCardStyle}>
-                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "6px" }}>
-                            Department
-                        </div>
-                        <div style={{ fontSize: "24px", fontWeight: 800, color: "#f8fafc" }}>
-                            {user.department || "-"}
-                        </div>
-                    </div>
+                {renderActionCard("Scheduling", "Time and Attendance", [
+                    { label: "Apply for Leave", path: "/apply-leave" },
+                    { label: "Leave History", path: "/my-leave" },
+                    { label: "Public Holidays", path: "/public-holidays" },
+                    ...((user.role === "manager" || user.role === "admin") ? [
+                        { label: "Leave Approvals", path: "/leave-approval" }
+                    ] : [])
+                ])}
 
-                    <div style={statCardStyle}>
-                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "6px" }}>
-                            Access Level
-                        </div>
-                        <div style={{ fontSize: "24px", fontWeight: 800, color: "#f8fafc" }}>
-                            {user.role === "admin"
-                                ? "Full"
-                                : user.role === "manager"
-                                    ? "Manager"
-                                    : "Employee"}
-                        </div>
-                    </div>
-                </div>
+                {renderActionCard("Structure", "Organisational Structure", [
+                    { label: "Organisational Chart", path: "/org-chart" },
+                    { label: "Performance Reviews", path: "/performance" },
+                    ...(user.role === "manager" ? [{ label: "Team Management", path: "/my-team" }] : [])
+                ])}
 
-                <div style={sectionCardStyle}>
-                    <div style={sectionTitleStyle}>
-                        <span>👤</span>
-                        <span>Account & User Management</span>
-                    </div>
-                    <div style={sectionButtonGridStyle}>
-                        {renderActionButton("My Profile", "/profile")}
-                        {renderActionButton("Change Password", "/change-password")}
+                {renderActionCard("Finance", "Payroll and Salary", [
+                    { label: "My Salary", path: "/my-salary" },
+                    ...(user.role === "admin" ? [{ label: "Salary Management", path: "/salary-management" }] : [])
+                ])}
 
-                        {user.role === "admin" && (
-                            <>
-                                {renderActionButton("Create Employee", "/create-employee")}
-                                {renderActionButton("Manage Employees", "/employees")}
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <div style={sectionCardStyle}>
-                    <div style={sectionTitleStyle}>
-                        <span>🗓️</span>
-                        <span>Leave Management</span>
-                    </div>
-                    <div style={sectionButtonGridStyle}>
-                        {renderActionButton("Apply Leave", "/apply-leave")}
-                        {renderActionButton("My Leave History", "/my-leave")}
-                        {renderActionButton("Public Holidays", "/public-holidays")}
-
-                        {(user.role === "manager" || user.role === "admin") &&
-                            renderActionButton("Leave Approval", "/leave-approval")}
-                    </div>
-                </div>
-
-                <div style={sectionCardStyle}>
-                    <div style={sectionTitleStyle}>
-                        <span>🏢</span>
-                        <span>Organization & Performance</span>
-                    </div>
-                    <div style={sectionButtonGridStyle}>
-                        {renderActionButton("View Org Chart", "/org-chart")}
-                        {renderActionButton("Performance Reviews", "/performance")}
-
-                        {user.role === "manager" &&
-                            renderActionButton("My Team", "/my-team")}
-                    </div>
-                </div>
-
-                <div style={sectionCardStyle}>
-                    <div style={sectionTitleStyle}>
-                        <span>💰</span>
-                        <span>Salary Management</span>
-                    </div>
-                    <div style={sectionButtonGridStyle}>
-                        {renderActionButton("My Salary", "/my-salary")}
-
-                        {user.role === "admin" &&
-                            renderActionButton("Salary Management", "/salary-management")}
-                    </div>
-                </div>
-
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        marginTop: "28px"
-                    }}
-                >
-                    <button
-                        className="btn btn-secondary"
-                        style={{
-                            padding: "12px 24px",
-                            fontWeight: 600
-                        }}
-                        onClick={handleLogout}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                            e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.35)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "translateY(0px)";
-                            e.currentTarget.style.boxShadow = "none";
-                        }}
-                    >
-                        Logout
-                    </button>
-                </div>
-            </div>
+            </main>
         </div>
     );
 }
