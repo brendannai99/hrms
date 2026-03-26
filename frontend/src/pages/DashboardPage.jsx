@@ -48,74 +48,221 @@ function DashboardPage() {
         return <p className="center-text">Loading...</p>;
     }
 
+    const sectionTitleStyle = {
+        fontSize: "18px",
+        fontWeight: 800,
+        color: "#f8fafc",
+        marginBottom: "14px",
+        letterSpacing: "0.5px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px"
+    };
+
+    const sectionCardStyle = {
+        background: "rgba(15, 23, 42, 0.6)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: "14px",
+        padding: "20px",
+        marginBottom: "18px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.35)"
+    };
+
+    const sectionButtonGridStyle = {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+        gap: "12px"
+    };
+
+    const actionButtonStyle = {
+        width: "100%",
+        padding: "12px 14px",
+        fontWeight: 600,
+        transition: "all 0.2s ease"
+    };
+
+    const statCardStyle = {
+        background: "linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95))",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: "14px",
+        padding: "18px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.35)"
+    };
+
+    const renderActionButton = (label, path) => (
+        <button
+            className="btn btn-primary"
+            style={actionButtonStyle}
+            onClick={() => navigate(path)}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.4)";
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0px)";
+                e.currentTarget.style.boxShadow = "none";
+            }}
+        >
+            {label}
+        </button>
+    );
+
     return (
         <div className="page-container">
-            <div className="card-narrow">
+            <div
+                className="card-narrow"
+                style={{
+                    width: "100%",
+                    maxWidth: "1080px",
+                    margin: "0 auto",
+                    padding: "36px 42px"
+                }}
+            >
                 <h1 className="page-title">Dashboard</h1>
 
-                <div className="info-list">
-                    <div>Welcome, {user.name}</div>
+                <div
+                    style={{
+                        background: "rgba(15, 23, 42, 0.45)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: "14px",
+                        padding: "20px",
+                        marginBottom: "24px",
+                        color: "#f8fafc",
+                        lineHeight: "1.8",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.28)"
+                    }}
+                >
+                    <div style={{ fontSize: "22px", fontWeight: 800, marginBottom: "6px" }}>
+                        Welcome, {user.name}
+                    </div>
                     <div>Email: {user.email}</div>
-                    <div>Role: {user.role}</div>
+                    <div style={{ textTransform: "capitalize" }}>Role: {user.role}</div>
                     <div>Department: {user.department || "-"}</div>
                 </div>
 
-                <div className="dashboard-actions">
-                    <button className="btn btn-primary" onClick={() => navigate("/profile")}>
-                        My Profile
-                    </button>
-                    <button className="btn btn-primary" onClick={() => navigate("/change-password")}>
-                        Change Password
-                    </button>
-                    <button className="btn btn-primary" onClick={() => navigate("/my-salary")}>
-                        My Salary
-                    </button>
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                        gap: "14px",
+                        marginBottom: "24px"
+                    }}
+                >
+                    <div style={statCardStyle}>
+                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "6px" }}>
+                            Current Role
+                        </div>
+                        <div style={{ fontSize: "24px", fontWeight: 800, color: "#f8fafc", textTransform: "capitalize" }}>
+                            {user.role}
+                        </div>
+                    </div>
 
-                    {/* Part 3 - New buttons for org chart and performance reviews */}
-                    <button className="btn btn-primary" onClick={() => navigate("/org-chart")}>
-                        View Org Chart
-                    </button>
-                    <button className="btn btn-primary" onClick={() => navigate("/performance")}>
-                        Performance Reviews
-                    </button>
-                    {(user.role === "manager") && (
-                        <button className="btn btn-primary" onClick={() => navigate("/my-team")}>
-                            My Team
-                        </button>
-                    )}
+                    <div style={statCardStyle}>
+                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "6px" }}>
+                            Department
+                        </div>
+                        <div style={{ fontSize: "24px", fontWeight: 800, color: "#f8fafc" }}>
+                            {user.department || "-"}
+                        </div>
+                    </div>
 
-                    <button className="btn btn-primary" onClick={() => navigate("/apply-leave")}>
-                        Apply Leave
-                    </button>
-                    <button className="btn btn-primary" onClick={() => navigate("/my-leave")}>
-                        My Leave History
-                    </button>
-                    <button className="btn btn-primary" onClick={() => navigate("/public-holidays")}>
-                        Public Holidays
-                    </button>
+                    <div style={statCardStyle}>
+                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "6px" }}>
+                            Access Level
+                        </div>
+                        <div style={{ fontSize: "24px", fontWeight: 800, color: "#f8fafc" }}>
+                            {user.role === "admin"
+                                ? "Full"
+                                : user.role === "manager"
+                                    ? "Manager"
+                                    : "Employee"}
+                        </div>
+                    </div>
+                </div>
 
-                    {(user.role === "manager" || user.role === "admin") && (
-                        <button className="btn btn-primary" onClick={() => navigate("/leave-approval")}>
-                            Leave Approval
-                        </button>
-                    )}
+                <div style={sectionCardStyle}>
+                    <div style={sectionTitleStyle}>
+                        <span>👤</span>
+                        <span>Account & User Management</span>
+                    </div>
+                    <div style={sectionButtonGridStyle}>
+                        {renderActionButton("My Profile", "/profile")}
+                        {renderActionButton("Change Password", "/change-password")}
 
-                    {user.role === "admin" && (
-                        <>
-                            <button className="btn btn-primary" onClick={() => navigate("/create-employee")}>
-                                Create Employee
-                            </button>
-                            <button className="btn btn-primary" onClick={() => navigate("/employees")}>
-                                Manage Employees
-                            </button>
-                            <button className="btn btn-primary" onClick={() => navigate("/salary-management")}>
-                                Salary Management
-                            </button>
-                            
-                        </>
-                    )}
+                        {user.role === "admin" && (
+                            <>
+                                {renderActionButton("Create Employee", "/create-employee")}
+                                {renderActionButton("Manage Employees", "/employees")}
+                            </>
+                        )}
+                    </div>
+                </div>
 
-                    <button className="btn btn-secondary" onClick={handleLogout}>
+                <div style={sectionCardStyle}>
+                    <div style={sectionTitleStyle}>
+                        <span>🗓️</span>
+                        <span>Leave Management</span>
+                    </div>
+                    <div style={sectionButtonGridStyle}>
+                        {renderActionButton("Apply Leave", "/apply-leave")}
+                        {renderActionButton("My Leave History", "/my-leave")}
+                        {renderActionButton("Public Holidays", "/public-holidays")}
+
+                        {(user.role === "manager" || user.role === "admin") &&
+                            renderActionButton("Leave Approval", "/leave-approval")}
+                    </div>
+                </div>
+
+                <div style={sectionCardStyle}>
+                    <div style={sectionTitleStyle}>
+                        <span>🏢</span>
+                        <span>Organization & Performance</span>
+                    </div>
+                    <div style={sectionButtonGridStyle}>
+                        {renderActionButton("View Org Chart", "/org-chart")}
+                        {renderActionButton("Performance Reviews", "/performance")}
+
+                        {user.role === "manager" &&
+                            renderActionButton("My Team", "/my-team")}
+                    </div>
+                </div>
+
+                <div style={sectionCardStyle}>
+                    <div style={sectionTitleStyle}>
+                        <span>💰</span>
+                        <span>Salary Management</span>
+                    </div>
+                    <div style={sectionButtonGridStyle}>
+                        {renderActionButton("My Salary", "/my-salary")}
+
+                        {user.role === "admin" &&
+                            renderActionButton("Salary Management", "/salary-management")}
+                    </div>
+                </div>
+
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginTop: "28px"
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary"
+                        style={{
+                            padding: "12px 24px",
+                            fontWeight: 600
+                        }}
+                        onClick={handleLogout}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                            e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.35)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0px)";
+                            e.currentTarget.style.boxShadow = "none";
+                        }}
+                    >
                         Logout
                     </button>
                 </div>
