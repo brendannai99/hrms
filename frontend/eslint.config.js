@@ -1,29 +1,77 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import { defineConfig } from "eslint/config";
+import reactPlugin from "eslint-plugin-react";
+import jestPlugin from "eslint-plugin-jest";
+import testingLibraryPlugin from "eslint-plugin-testing-library";
+import babelParser from "@babel/eslint-parser";
+
+import pluginSecurity from "eslint-plugin-security";
+import securityNode from "eslint-plugin-security-node";
+import eslintPluginNoUnsanitized from "eslint-plugin-no-unsanitized";
 
 export default defineConfig([
-  globalIgnores(['dist']),
   {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
+    files: ["**/*.{js,jsx}"],
+    ignores: ["node_modules/**", "dist/**", "build/**", "coverage/**", "reports/**"],
+
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      parser: babelParser,
       parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+        requireConfigFile: false,
+        babelOptions: {
+          presets: ["@babel/preset-react"],
+        },
       },
     },
+
+    plugins: {
+      react: reactPlugin,
+      security: pluginSecurity,
+      "security-node": securityNode,
+      "no-unsanitized": eslintPluginNoUnsanitized,
+    },
+
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      ...reactPlugin.configs.recommended.rules,
+      ...eslintPluginNoUnsanitized.configs.recommended.rules,
+
+      "react/react-in-jsx-scope": "off",
+
+      "security/detect-eval-with-expression": "error",
+      "security/detect-non-literal-regexp": "warn",
+      "security/detect-unsafe-regex": "warn",
+      "security/detect-buffer-noassert": "warn",
+
+      "security-node/detect-crlf": "error",
+    },
+
+    settings: {
+      react: {
+        version: "detect",
+      },
     },
   },
-])
+
+  {
+    files: ["**/*.test.{js,jsx}"],
+    plugins: {
+      jest: jestPlugin,
+      "testing-library": testingLibraryPlugin,
+    },
+    rules: {
+      ...jestPlugin.configs.recommended.rules,
+      ...testingLibraryPlugin.configs.react.rules,
+      "testing-library/await-async-events": "off",
+    },
+    languageOptions: {
+      globals: {
+        test: true,
+        expect: true,
+        describe: true,
+        beforeEach: true,
+        afterEach: true,
+        it: true,
+        jest: true,
+      },
+    },
+  },
+]);
